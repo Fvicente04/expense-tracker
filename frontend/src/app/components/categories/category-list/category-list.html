@@ -1,0 +1,118 @@
+<app-navbar>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">Categorias</h1>
+        <p class="page-subtitle">Organize suas receitas e despesas</p>
+      </div>
+      <button class="btn-primary" (click)="goToAddCategory()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Nova Categoria</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="page-content">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Carregando categorias...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage" class="error-banner">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Categories Grid -->
+    <div *ngIf="!isLoading && categories.length > 0">
+      <!-- Expense Categories -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">💸 Categorias de Despesas</h2>
+          <p class="section-subtitle">{{ getExpenseCategories().length }} categoria(s)</p>
+        </div>
+
+        <div class="categories-grid">
+          <div *ngFor="let category of getExpenseCategories()" class="category-card">
+            <div class="category-icon" [style.background]="category.color + '20'">
+              <span [style.color]="category.color">{{ category.icon }}</span>
+            </div>
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              <span class="category-badge expense">Despesa</span>
+            </div>
+            <div class="category-actions">
+              <button class="action-btn edit" (click)="editCategory(category.id)" *ngIf="!category.is_default">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9441 1.59129C12.1722 1.49653 12.4165 1.44769 12.6633 1.44769C12.9101 1.44769 13.1544 1.49653 13.3825 1.59129C13.6106 1.68605 13.8183 1.82494 13.9933 2.00004C14.1684 2.17513 14.3073 2.38282 14.4021 2.61091C14.4968 2.839 14.5457 3.08334 14.5457 3.33004C14.5457 3.57674 14.4968 3.82107 14.4021 4.04916C14.3073 4.27725 14.1684 4.48494 13.9933 4.66004L5.00001 13.6534L1.33334 14.6667L2.34667 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <span *ngIf="category.is_default" class="default-badge">Padrão</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Income Categories -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">💰 Categorias de Receitas</h2>
+          <p class="section-subtitle">{{ getIncomeCategories().length }} categoria(s)</p>
+        </div>
+
+        <div class="categories-grid">
+          <div *ngFor="let category of getIncomeCategories()" class="category-card">
+            <div class="category-icon" [style.background]="category.color + '20'">
+              <span [style.color]="category.color">{{ category.icon }}</span>
+            </div>
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              <span class="category-badge income">Receita</span>
+            </div>
+            <div class="category-actions">
+              <button class="action-btn edit" (click)="editCategory(category.id)" *ngIf="!category.is_default">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9441 1.59129C12.1722 1.49653 12.4165 1.44769 12.6633 1.44769C12.9101 1.44769 13.1544 1.49653 13.3825 1.59129C13.6106 1.68605 13.8183 1.82494 13.9933 2.00004C14.1684 2.17513 14.3073 2.38282 14.4021 2.61091C14.4968 2.839 14.5457 3.08334 14.5457 3.33004C14.5457 3.57674 14.4968 3.82107 14.4021 4.04916C14.3073 4.27725 14.1684 4.48494 13.9933 4.66004L5.00001 13.6534L1.33334 14.6667L2.34667 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <span *ngIf="category.is_default" class="default-badge">Padrão</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && categories.length === 0" class="section-card">
+      <div class="empty-state">
+        <div class="empty-icon">📂</div>
+        <h3>Nenhuma categoria encontrada</h3>
+        <p>Comece criando categorias para organizar suas transações!</p>
+        <button class="btn-primary" (click)="goToAddCategory()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Criar Primeira Categoria</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</app-navbar>

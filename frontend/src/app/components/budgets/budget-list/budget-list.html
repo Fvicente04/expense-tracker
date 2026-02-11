@@ -1,0 +1,157 @@
+<app-navbar>
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">Budgets</h1>
+        <p class="page-subtitle">Plan and control your monthly spending</p>
+      </div>
+      <button class="btn-primary" (click)="goToAddBudget()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>New Budget</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="month-selector">
+      <button class="month-nav-btn" (click)="changeMonth(-1)">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="month-display">
+        <h2>{{ getMonthName() }} {{ selectedYear }}</h2>
+      </div>
+      <button class="month-nav-btn" (click)="changeMonth(1)">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-icon blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">Total Budgeted</p>
+          <h3 class="summary-value">€{{ getTotalBudgeted().toFixed(2) }}</h3>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon red">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">Total Spent</p>
+          <h3 class="summary-value">€{{ getTotalSpent().toFixed(2) }}</h3>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon" [class.green]="getTotalRemaining() >= 0" [class.red]="getTotalRemaining() < 0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">Remaining</p>
+          <h3 class="summary-value" [class.negative]="getTotalRemaining() < 0">
+            €{{ getTotalRemaining().toFixed(2) }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading budgets...</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-banner">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div *ngIf="!isLoading && getFilteredBudgets().length > 0" class="budgets-container">
+      <div class="section-card">
+        <div class="budgets-grid">
+          <div *ngFor="let budget of getFilteredBudgets()" class="budget-card">
+            <div class="budget-header">
+              <div class="category-info">
+                <div class="category-icon" [style.background]="budget.Category?.color + '20'">
+                  <span [style.color]="budget.Category?.color">{{ budget.Category?.icon }}</span>
+                </div>
+                <div>
+                  <h3>{{ budget.Category?.name }}</h3>
+                  <p class="budget-period">{{ getMonthName() }} {{ selectedYear }}</p>
+                </div>
+              </div>
+              <div class="budget-actions">
+                <button class="action-btn edit" (click)="editBudget(budget.id)">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9441 1.59129C12.1722 1.49653 12.4165 1.44769 12.6633 1.44769C12.9101 1.44769 13.1544 1.49653 13.3825 1.59129C13.6106 1.68605 13.8183 1.82494 13.9933 2.00004C14.1684 2.17513 14.3073 2.38282 14.4021 2.61091C14.4968 2.839 14.5457 3.08334 14.5457 3.33004C14.5457 3.57674 14.4968 3.82107 14.4021 4.04916C14.3073 4.27725 14.1684 4.48494 13.9933 4.66004L5.00001 13.6534L1.33334 14.6667L2.34667 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="action-btn delete" (click)="deleteBudget(budget.id)">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="budget-progress">
+              <div class="progress-info">
+                <span class="spent">€{{ formatCurrency(budget.spent) }}</span>
+                <span class="total">of €{{ formatCurrency(budget.amount) }}</span>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="getProgressPercentage(budget)"
+                  [style.background]="getProgressColor(budget)">
+                </div>
+              </div>
+              <div class="progress-footer">
+                <span class="percentage">{{ getProgressPercentage(budget).toFixed(0) }}%</span>
+                <span class="status" [style.color]="getProgressColor(budget)">
+                  {{ getStatusText(budget) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && getFilteredBudgets().length === 0" class="section-card">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <path d="M32 8V56M40 16H26C23.7909 16 21.6726 16.8482 20.1714 18.3484C18.6701 19.8487 17.8219 21.967 17.8219 24.1761C17.8219 26.3852 18.6701 28.5035 20.1714 30.0037C21.6726 31.504 23.7909 32.3522 26 32.3522H38C40.2091 32.3522 42.3274 33.2004 43.8286 34.7007C45.3299 36.2009 46.1781 38.3192 46.1781 40.5283C46.1781 42.7374 45.3299 44.8557 43.8286 46.3559C42.3274 47.8562 40.2091 48.7044 38 48.7044H16" stroke="#6b7280" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>No budgets for {{ getMonthName() }} {{ selectedYear }}</h3>
+        <p>Create budgets to control your monthly spending!</p>
+        <button class="btn-primary" (click)="goToAddBudget()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Create First Budget</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</app-navbar>

@@ -1,0 +1,58 @@
+<div class="alerts-container" *ngIf="!isLoading && showAlerts && alerts.length > 0">
+  <div class="alerts-header">
+    <div class="alerts-title">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h3>Budget Alerts ({{ alerts.length }})</h3>
+    </div>
+    <button class="close-all-btn" (click)="closeAllAlerts()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="alerts-list">
+    <div *ngFor="let alert of alerts; let i = index" class="alert-item" [class]="alert.status">
+      <div class="alert-icon">
+        <svg *ngIf="alert.status === 'exceeded'" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg *ngIf="alert.status === 'danger' || alert.status === 'warning'" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L2 16H18L10 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 8V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M10 14H10.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="alert-content">
+        <div class="alert-category">
+          <span class="category-icon" [style.color]="alert.budget.Category?.color || '#6b7280'">
+            {{ alert.budget.Category?.icon || '' }}
+          </span>
+          <strong>{{ alert.budget.Category?.name || 'Unknown' }}</strong>
+        </div>
+        <p class="alert-message">{{ alert.message }}</p>
+        <div class="alert-progress">
+          <div class="progress-bar" [class]="alert.status" [style.width.%]="alert.percentage"></div>
+        </div>
+      </div>
+
+      <button class="dismiss-btn" (click)="dismissAlert(i)">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="alerts-footer">
+    <button class="view-budgets-btn" (click)="goToBudgets()">
+      View All Budgets
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>

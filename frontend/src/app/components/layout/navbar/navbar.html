@@ -1,0 +1,109 @@
+<!-- Desktop Sidebar -->
+<aside class="sidebar" [class.expanded]="isExpanded" [class.mobile-open]="isMobileMenuOpen">
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#3b82f6"/>
+        <path d="M16 8v16M12 12h8M12 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text" *ngIf="isExpanded || isMobile">ExpenseTracker</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav-menu">
+    <!-- Dashboard -->
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-text">Dashboard</span>
+    </a>
+
+    <!-- Transactions -->
+    <a routerLink="/transactions" routerLinkActive="active" class="nav-item">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M16 4H18C18.5304 4 19.0391 4.21071 19.4142 4.58579C19.7893 4.96086 20 5.46957 20 6V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V6C4 5.46957 4.21071 4.96086 4.58579 4.58579C4.96086 4.21071 5.46957 4 6 4H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 2H9C8.44772 2 8 2.44772 8 3V5C8 5.55228 8.44772 6 9 6H15C15.5523 6 16 5.55228 16 5V3C16 2.44772 15.5523 2 15 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-text">Transactions</span>
+    </a>
+
+    <!-- Categories -->
+    <a routerLink="/categories" routerLinkActive="active" class="nav-item">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+        <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+        <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+        <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <span class="nav-text">Categories</span>
+    </a>
+
+    <!-- Budgets -->
+    <a routerLink="/budgets" routerLinkActive="active" class="nav-item">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-text">Budgets</span>
+    </a>
+
+    <!-- Reports -->
+    <a routerLink="/reports" routerLinkActive="active" class="nav-item">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-text">Reports</span>
+    </a>
+
+    <div class="nav-divider"></div>
+
+    <!-- Logout -->
+    <button class="nav-item logout" (click)="logout()">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-text">Logout</span>
+    </button>
+  </nav>
+
+  <!-- Toggle Button - No Rodapé -->
+  <div class="sidebar-footer" *ngIf="!isMobile">
+    <button class="toggle-btn" (click)="toggleSidebar()" [title]="isExpanded ? 'Collapse sidebar' : 'Expand sidebar'">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</aside>
+
+<!-- Mobile Header -->
+<div class="mobile-header" *ngIf="isMobile">
+  <div class="mobile-header-content">
+    <button class="hamburger-btn" (click)="toggleMobileMenu()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="mobile-logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <rect width="32" height="32" rx="8" fill="#3b82f6"/>
+        <path d="M16 8v16M12 12h8M12 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>ExpenseTracker</span>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+<!-- Main Content -->
+<main class="main-content" [class.expanded]="isExpanded">
+  <ng-content></ng-content>
+</main>
