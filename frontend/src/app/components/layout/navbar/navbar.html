@@ -5,29 +5,29 @@
         <rect width="32" height="32" rx="8" fill="#3b82f6"/>
         <path d="M16 8v16M12 12h8M12 20h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
       </svg>
-      <span class="logo-text" *ngIf="isExpanded || isMobile">ExpenseTracker</span>
+      <span class="logo-text">ExpenseTracker</span>
     </div>
   </div>
 
   <nav class="nav-menu">
     <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M3 9L12 2L21 9V20C21 20.53 20.79 21.04 20.41 21.41C20.04 21.79 19.53 22 19 22H5C4.47 22 3.96 21.79 3.59 21.41C3.21 21.04 3 20.53 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span class="nav-text">Dashboard</span>
     </a>
 
     <a routerLink="/transactions" routerLinkActive="active" class="nav-item">
-      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M16 4H18C18.5304 4 19.0391 4.21071 19.4142 4.58579C19.7893 4.96086 20 5.46957 20 6V20C20 20.5304 19.7893 21.0391 19.4142 21.4142C19.0391 21.7893 18.5304 22 18 22H6C5.46957 22 4.96086 21.7893 4.58579 21.4142C4.21071 21.0391 4 20.5304 4 20V6C4 5.46957 4.21071 4.96086 4.58579 4.58579C4.96086 4.21071 5.46957 4 6 4H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M15 2H9C8.44772 2 8 2.44772 8 3V5C8 5.55228 8.44772 6 9 6H15C15.5523 6 16 5.55228 16 5V3C16 2.44772 15.5523 2 15 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M16 4H18C18.53 4 19.04 4.21 19.41 4.59C19.79 4.96 20 5.47 20 6V20C20 20.53 19.79 21.04 19.41 21.41C19.04 21.79 18.53 22 18 22H6C5.47 22 4.96 21.79 4.59 21.41C4.21 21.04 4 20.53 4 20V6C4 5.47 4.21 4.96 4.59 4.59C4.96 4.21 5.47 4 6 4H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 2H9C8.45 2 8 2.45 8 3V5C8 5.55 8.45 6 9 6H15C15.55 6 16 5.55 16 5V3C16 2.45 15.55 2 15 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span class="nav-text">Transactions</span>
     </a>
 
     <a routerLink="/categories" routerLinkActive="active" class="nav-item">
-      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
         <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
         <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
         <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
@@ -37,7 +37,7 @@
     </a>
 
     <a routerLink="/budgets" routerLinkActive="active" class="nav-item">
-      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
         <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -45,8 +45,8 @@
     </a>
 
     <a routerLink="/reports" routerLinkActive="active" class="nav-item">
-      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.53 20 19.04 19.79 19.41 19.41C19.79 19.04 20 18.53 20 18V6C20 5.47 19.79 4.96 19.41 4.59C19.04 4.21 18.53 4 18 4H6C5.47 4 4.96 4.21 4.59 4.59C4.21 4.96 4 5.47 4 6V18C4 18.53 4.21 19.04 4.59 19.41C4.96 19.79 5.47 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span class="nav-text">Reports</span>
     </a>
@@ -54,26 +54,26 @@
     <div class="nav-divider"></div>
 
     <button class="nav-item" (click)="toggleTheme()">
-      <svg *ngIf="!isDark" class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <svg *ngIf="!isDark" class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <svg *ngIf="isDark" class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <svg *ngIf="isDark" class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
-        <line x1="12" y1="1"  x2="12" y2="3"  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="4.22" y1="4.22"   x2="5.64" y2="5.64"   stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="1"  y1="12" x2="3"  y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
       <span class="nav-text">{{ isDark ? 'Light mode' : 'Dark mode' }}</span>
     </button>
 
     <button class="nav-item logout" (click)="logout()">
-      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg class="nav-icon" width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M9 21H5C4.47 21 3.96 20.79 3.59 20.41C3.21 20.04 3 19.53 3 19V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M16 17L21 12L16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -82,11 +82,11 @@
   </nav>
 
   <div class="sidebar-footer" *ngIf="!isMobile">
-    <button class="toggle-btn" (click)="toggleSidebar()" [title]="isExpanded ? 'Collapse sidebar' : 'Expand sidebar'">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M12 16L6 10L12 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
+    <div class="user-avatar" *ngIf="userInitials">{{ userInitials }}</div>
+    <div class="user-info" *ngIf="userInitials">
+      <span class="user-name">{{ userName }}</span>
+      <span class="user-role">Personal account</span>
+    </div>
   </div>
 </aside>
 
@@ -104,6 +104,7 @@
       </svg>
       <span>ExpenseTracker</span>
     </div>
+    <div class="mobile-avatar" *ngIf="userInitials">{{ userInitials }}</div>
   </div>
 </div>
 

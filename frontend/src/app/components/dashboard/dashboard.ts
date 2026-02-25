@@ -5,6 +5,7 @@ import { NavbarComponent } from '../layout/navbar/navbar';
 import { TransactionService } from '../../services/transaction';
 import { BudgetService } from '../../services/budget';
 import { ReportService } from '../../services/report';
+import { AuthService } from '../../services/auth.service';
 import { Transaction } from '../../models/transaction';
 import { Budget } from '../../models/budget';
 import { Chart, registerables } from 'chart.js';
@@ -24,6 +25,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
   private viewInitialized = false;
   private subs: Subscription[] = [];
+
+  userName = '';
 
   totalIncome = 0;
   totalExpense = 0;
@@ -60,10 +63,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private transactionService: TransactionService,
     private budgetService: BudgetService,
     private reportService: ReportService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void { this.initDate(); }
+  ngOnInit(): void {
+    this.initDate();
+    this.subs.push(
+      this.authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.userName = (user.name || user.email || '').split(' ')[0] || 'there';
+          this.cdr.detectChanges();
+        }
+      })
+    );
+  }
 
   ngAfterViewInit(): void {
     this.viewInitialized = true;
@@ -76,13 +90,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initDate(): void {
-    const today = new Date();
+    const today  = new Date();
     const months = ['January','February','March','April','May','June',
                     'July','August','September','October','November','December'];
     this.currentMonthLabel = `${months[today.getMonth()]} ${today.getFullYear()}`;
     this.todayLabel = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     this.totalDaysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    this.dayOfMonth = today.getDate();
+    this.dayOfMonth    = today.getDate();
     this.daysRemaining = this.totalDaysInMonth - this.dayOfMonth + 1;
   }
 
@@ -93,14 +107,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (h < 12) return 'morning';
     if (h < 18) return 'afternoon';
     return 'evening';
-  }
-
-  get userName(): string {
-    try {
-      const raw  = localStorage.getItem('user') || localStorage.getItem('currentUser') || '{}';
-      const user = JSON.parse(raw);
-      return (user.name || user.email || '').split(' ')[0] || 'there';
-    } catch { return 'there'; }
   }
 
   loadData(): void {
@@ -130,7 +136,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.subs.push(
         this.reportService.getSummary(mStart, mEnd).subscribe({
           next: (d: any) => {
-            const inc = Number(d.totalIncome || 0);
+            const inc = Number(d.totalIncome  || 0);
             const exp = Number(d.totalExpense || 0);
             if (inc > 0 || exp > 0) {
               avgExpTotal += exp;
@@ -189,7 +195,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             })
             .reduce((sum: number, t: Transaction) => sum + Math.abs(Number(t.amount)), 0);
 
-          const weekly = [0, 0, 0, 0, 0, 0, 0];
+          const weekly   = [0, 0, 0, 0, 0, 0, 0];
           const todayIdx = (today.getDay() + 6) % 7;
           txs.forEach((t: Transaction) => {
             if (t.type !== 'expense') return;
