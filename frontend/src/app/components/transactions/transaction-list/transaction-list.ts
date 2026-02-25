@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NavbarComponent } from '../../layout/navbar/navbar';
 import { TransactionService } from '../../../services/transaction';
 import { CategoryService } from '../../../services/category';
@@ -17,66 +17,73 @@ import { Category } from '../../../models/category';
 })
 export class TransactionListComponent implements OnInit {
   transactions: Transaction[] = [];
-  filteredTransactions: Transaction[] = [];
+  filtered: Transaction[] = [];
   categories: Category[] = [];
   isLoading = false;
   errorMessage = '';
-  
-  showModal = false;
-  isEditMode = false;
-  editingId = '';
-  transactionForm: FormGroup;
 
-  filters = {
-    type: '',
-    categoryId: '',
-    startDate: '',
-    endDate: ''
-  };
+  showModal = false;
+  editMode = false;
+  editingId = '';
+  form: FormGroup;
+
+  selected = new Set<string>();
+  bulkDeleting = false;
+  showFuture = false;
+
+  filters = { type: '', categoryId: '', startDate: '', endDate: '' };
 
   constructor(
     private transactionService: TransactionService,
     private categoryService: CategoryService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
-    this.transactionForm = this.fb.group({
-      type: ['income', Validators.required],
-      amount: ['', [Validators.required, Validators.min(0)]],
-      date: [this.getTodayDate(), Validators.required],
-      categoryId: ['', Validators.required],
-      description: ['', Validators.required]
+    this.form = this.fb.group({
+      type:               ['income', Validators.required],
+      amount:             ['', [Validators.required, Validators.min(0.01)]],
+      date:               [this.today(), Validators.required],
+      categoryId:         ['', Validators.required],
+      description:        ['', [Validators.required, Validators.minLength(3)]],
+      notes:              [''],
+      isRecurring:        [false],
+      recurringFrequency: ['monthly'],
+      recurringEndDate:   [null]
     });
   }
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadTransactions();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['openModal'] === 'true') {
+        setTimeout(() => this.openModal(), 300);
+        this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+      }
+    });
   }
 
   loadCategories(): void {
     this.categoryService.getAll().subscribe({
-      next: (data) => {
-        this.categories = data;
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-      }
+      next: data => this.categories = data ?? [],
+      error: () => {}
     });
   }
 
   loadTransactions(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.selected.clear();
 
     this.transactionService.getAll().subscribe({
-      next: (data) => {
-        this.transactions = data;
+      next: data => {
+        this.transactions = data ?? [];
         this.applyFilters();
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Error loading transactions:', error);
+      error: () => {
         this.errorMessage = 'Failed to load transactions';
         this.isLoading = false;
       }
@@ -84,166 +91,203 @@ export class TransactionListComponent implements OnInit {
   }
 
   applyFilters(): void {
-    this.filteredTransactions = this.transactions.filter(t => {
-      const typeMatch = !this.filters.type || t.type === this.filters.type;
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    this.selected.clear();
+
+    this.filtered = this.transactions.filter(t => {
+      const typeMatch     = !this.filters.type       || t.type === this.filters.type;
       const categoryMatch = !this.filters.categoryId || String(t.categoryId) === String(this.filters.categoryId);
-      
+      const futureMatch   = this.showFuture || new Date(t.date) <= today;
       let dateMatch = true;
-      if (this.filters.startDate) {
-        dateMatch = dateMatch && new Date(t.date) >= new Date(this.filters.startDate);
-      }
-      if (this.filters.endDate) {
-        dateMatch = dateMatch && new Date(t.date) <= new Date(this.filters.endDate);
-      }
-      
-      return typeMatch && categoryMatch && dateMatch;
+      if (this.filters.startDate) dateMatch = dateMatch && new Date(t.date) >= new Date(this.filters.startDate);
+      if (this.filters.endDate)   dateMatch = dateMatch && new Date(t.date) <= new Date(this.filters.endDate);
+      return typeMatch && categoryMatch && dateMatch && futureMatch;
     });
   }
 
   clearFilters(): void {
-    this.filters = {
-      type: '',
-      categoryId: '',
-      startDate: '',
-      endDate: ''
-    };
+    this.filters = { type: '', categoryId: '', startDate: '', endDate: '' };
+    this.showFuture = false;
     this.applyFilters();
   }
 
-  getTotalIncome(): number {
-    return this.filteredTransactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  get allSelected(): boolean {
+    return this.filtered.length > 0 && this.filtered.every(t => this.selected.has(t.id));
   }
 
-  getTotalExpenses(): number {
-    return this.filteredTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  get someSelected(): boolean { return this.selected.size > 0 && !this.allSelected; }
+
+  toggleAll(event: Event): void {
+    if ((event.target as HTMLInputElement).checked) this.filtered.forEach(t => this.selected.add(t.id));
+    else this.selected.clear();
   }
 
-  getBalance(): number {
-    return this.getTotalIncome() - this.getTotalExpenses();
+  toggleOne(id: string): void {
+    if (this.selected.has(id)) this.selected.delete(id);
+    else this.selected.add(id);
   }
 
-  formatCurrency(value: any): string {
-    return Number(value || 0).toFixed(2);
+  clearSelection(): void { this.selected.clear(); }
+
+  deleteSelected(): void {
+    const count = this.selected.size;
+    if (!count || !confirm(`Delete ${count} transaction${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+
+    this.bulkDeleting = true;
+    const ids = Array.from(this.selected);
+    let done = 0;
+    const finish = () => { if (++done === ids.length) { this.bulkDeleting = false; this.loadTransactions(); } };
+    ids.forEach(id => this.transactionService.delete(id).subscribe({ next: finish, error: finish }));
   }
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  totalIncome(): number {
+    return this.filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
+  }
+
+  totalExpenses(): number {
+    return this.filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
+  }
+
+  balance(): number { return this.totalIncome() - this.totalExpenses(); }
+  fmt(value: any): string { return Number(value || 0).toFixed(2); }
+  fmtDate(date: string): string {
+    return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+  today(): string { return new Date().toISOString().split('T')[0]; }
+
+  filteredCats(): Category[] {
+    return this.categories.filter(c => c.type === this.form.get('type')?.value);
+  }
+
+  private setDefaultCategory(type: 'income' | 'expense'): void {
+    const first = this.categories.find(c => c.type === type);
+    this.form.patchValue({ categoryId: first?.id ?? '' });
+  }
+
+  catColor(t: Transaction): string { return t.category?.color || '#6b7280'; }
+  catIcon(t: Transaction): string  { return t.category?.icon  || ''; }
+  catName(t: Transaction): string  { return t.category?.name  || 'Unknown'; }
+
+  toggleRecurring(): void {
+    const curr = this.form.get('isRecurring')?.value;
+    this.form.patchValue({
+      isRecurring: !curr,
+      recurringFrequency: !curr ? 'monthly' : null,
+      recurringEndDate: null
     });
   }
 
-  getTodayDate(): string {
-    return new Date().toISOString().split('T')[0];
+  setFrequency(freq: 'weekly' | 'monthly' | 'yearly'): void {
+    this.form.patchValue({ recurringFrequency: freq });
   }
 
-  getFilteredCategories(): Category[] {
-    const type = this.transactionForm.get('type')?.value;
-    return this.categories.filter(c => c.type === type);
-  }
+  recurringPreview(): string {
+    const freq  = this.form.get('recurringFrequency')?.value;
+    const end   = this.form.get('recurringEndDate')?.value;
+    const start = this.form.get('date')?.value;
+    if (!freq || !start) return '';
 
-  getCategoryColor(transaction: Transaction): string {
-    return transaction.category?.color || '#6b7280';
-  }
+    const label: Record<string, string> = { weekly: 'week', monthly: 'month', yearly: 'year' };
 
-  getCategoryIcon(transaction: Transaction): string {
-    return transaction.category?.icon || '';
-  }
+    if (end) {
+      const endDate = new Date(end);
+      const curr = new Date(start);
+      let count = 0;
+      while (count < 60) {
+        if (freq === 'weekly')       curr.setDate(curr.getDate() + 7);
+        else if (freq === 'monthly') curr.setMonth(curr.getMonth() + 1);
+        else                         curr.setFullYear(curr.getFullYear() + 1);
+        if (curr > endDate) break;
+        count++;
+      }
+      const fmt = endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      return `Every ${label[freq]} · ${count} occurrence${count !== 1 ? 's' : ''} until ${fmt}`;
+    }
 
-  getCategoryName(transaction: Transaction): string {
-    return transaction.category?.name || 'Unknown';
+    return `Every ${label[freq]}, indefinitely (up to 60 occurrences)`;
   }
 
   openModal(): void {
     this.showModal = true;
-    this.isEditMode = false;
+    this.editMode = false;
     this.editingId = '';
-    this.transactionForm.reset({
-      type: 'income',
-      date: this.getTodayDate()
-    });
     this.errorMessage = '';
+    this.form.reset({
+      type: 'income', amount: '', date: this.today(),
+      categoryId: '', description: '', notes: '',
+      isRecurring: false, recurringFrequency: 'monthly', recurringEndDate: null
+    });
+    this.setDefaultCategory('income');
   }
 
   closeModal(): void {
     this.showModal = false;
-    this.isEditMode = false;
+    this.editMode = false;
     this.editingId = '';
-    this.transactionForm.reset();
     this.errorMessage = '';
+    this.form.reset();
   }
 
-  editTransaction(transaction: Transaction): void {
+  editTransaction(t: Transaction): void {
     this.showModal = true;
-    this.isEditMode = true;
-    this.editingId = transaction.id;
+    this.editMode = true;
+    this.editingId = t.id;
     this.errorMessage = '';
-
-    this.transactionForm.patchValue({
-      type: transaction.type,
-      amount: transaction.amount,
-      date: transaction.date,
-      categoryId: transaction.categoryId,
-      description: transaction.description
+    this.form.patchValue({
+      type:               t.type,
+      amount:             t.amount,
+      date:               String(t.date).slice(0, 10),
+      categoryId:         t.categoryId,
+      description:        t.description,
+      notes:              (t as any).notes ?? '',
+      isRecurring:        (t as any).isRecurring ?? false,
+      recurringFrequency: (t as any).recurringFrequency ?? 'monthly',
+      recurringEndDate:   (t as any).recurringEndDate ?? null
     });
+    if (!this.form.get('categoryId')?.value) this.setDefaultCategory(t.type as any);
   }
 
   onSubmit(): void {
-    if (this.transactionForm.invalid) {
-      Object.keys(this.transactionForm.controls).forEach(key => {
-        this.transactionForm.get(key)?.markAsTouched();
-      });
+    if (this.form.invalid) {
+      Object.keys(this.form.controls).forEach(k => this.form.get(k)?.markAsTouched());
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
+    const raw = this.form.value;
 
-    const formData = this.transactionForm.value;
+    const payload: any = {
+      type:               raw.type,
+      amount:             Number(raw.amount),
+      date:               String(raw.date).slice(0, 10),
+      categoryId:         raw.categoryId,
+      description:        raw.description,
+      notes:              raw.notes || null,
+      isRecurring:        raw.isRecurring,
+      recurringFrequency: raw.isRecurring ? raw.recurringFrequency : null,
+      recurringEndDate:   raw.isRecurring && raw.recurringEndDate ? raw.recurringEndDate : null
+    };
 
-    if (this.isEditMode) {
-      this.transactionService.update(this.editingId, formData).subscribe({
-        next: () => {
-          this.loadTransactions();
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('Error updating transaction:', error);
-          this.errorMessage = 'Failed to update transaction';
-          this.isLoading = false;
-        }
-      });
-    } else {
-      this.transactionService.create(formData).subscribe({
-        next: () => {
-          this.loadTransactions();
-          this.closeModal();
-        },
-        error: (error) => {
-          console.error('Error creating transaction:', error);
-          this.errorMessage = 'Failed to create transaction';
-          this.isLoading = false;
-        }
-      });
-    }
+    const op = this.editMode
+      ? this.transactionService.update(this.editingId, payload)
+      : this.transactionService.create(payload);
+
+    op.subscribe({
+      next: () => { this.loadTransactions(); this.closeModal(); },
+      error: err => {
+        this.errorMessage = err?.error?.message || `Failed to ${this.editMode ? 'update' : 'create'} transaction`;
+        this.isLoading = false;
+      }
+    });
   }
 
   deleteTransaction(id: string): void {
-    if (confirm('Are you sure you want to delete this transaction?')) {
-      this.transactionService.delete(id).subscribe({
-        next: () => {
-          this.loadTransactions();
-        },
-        error: (error) => {
-          console.error('Error deleting transaction:', error);
-          this.errorMessage = 'Failed to delete transaction';
-        }
-      });
-    }
+    if (!confirm('Delete this transaction?')) return;
+    this.transactionService.delete(id).subscribe({
+      next: () => this.loadTransactions(),
+      error: () => this.errorMessage = 'Failed to delete transaction'
+    });
   }
 }

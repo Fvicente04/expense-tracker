@@ -1,17 +1,14 @@
 <app-navbar>
-  <!-- Page Header -->
   <div class="page-header">
     <div class="header-content">
       <div class="header-left">
         <h1 class="page-title">Reports & Analytics</h1>
-        <p class="page-subtitle">Track your financial performance</p>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
   <div class="page-content">
-    <!-- Date Filter -->
+
     <div class="filter-card">
       <form [formGroup]="filterForm" (change)="onFilterChange()">
         <div class="filter-row">
@@ -27,64 +24,82 @@
       </form>
     </div>
 
-    <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-container">
       <div class="spinner"></div>
       <p>Loading reports...</p>
     </div>
 
-    <!-- Error State -->
     <div *ngIf="errorMessage" class="error-banner">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
       <span>{{ errorMessage }}</span>
     </div>
 
-    <div *ngIf="!isLoading">
-      <!-- Summary Cards -->
+    <div *ngIf="!isLoading" class="sections-wrapper">
+
+      <div class="insights-card" *ngIf="quickInsights.length > 0">
+        <div class="insights-header">
+          <div class="insights-icon">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2a6 6 0 0 1 6 6c0 2.22-1.2 4.15-3 5.19V15a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-1.81A6 6 0 0 1 10 2z"
+                stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M8 18h4" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="insights-title">Quick Insights</p>
+        </div>
+        <div class="insights-list">
+          <div *ngFor="let insight of quickInsights" class="insight-item">
+            <span class="insight-dot" [class]="insight.type"></span>
+            <span [innerHTML]="insight.text"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="summary-cards">
         <div class="summary-card green">
           <div class="summary-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2V22M17 5H9.5C8.57 5 7.68 5.37 7.03 6.03C6.37 6.68 6 7.57 6 8.5C6 9.43 6.37 10.32 7.03 10.97C7.68 11.63 8.57 12 9.5 12H14.5C15.43 12 16.32 12.37 16.97 13.03C17.63 13.68 18 14.57 18 15.5C18 16.43 17.63 17.32 16.97 17.97C16.32 18.63 15.43 19 14.5 19H6"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <div class="summary-info">
             <p class="summary-label">Total Income</p>
-            <h3 class="summary-value">€{{ summary.totalIncome.toFixed(2) }}</h3>
+            <h3 class="summary-value">&#x20AC;{{ summary.totalIncome.toFixed(2) }}</h3>
           </div>
         </div>
-
         <div class="summary-card red">
           <div class="summary-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M16 8V16M12 11V16M8 14V16M6 20H18C19.1 20 20 19.1 20 18V6C20 4.9 19.1 4 18 4H6C4.9 4 4 4.9 4 6V18C4 19.1 4.9 20 6 20Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
           <div class="summary-info">
             <p class="summary-label">Total Expenses</p>
-            <h3 class="summary-value">€{{ summary.totalExpense.toFixed(2) }}</h3>
+            <h3 class="summary-value">&#x20AC;{{ summary.totalExpense.toFixed(2) }}</h3>
           </div>
         </div>
-
         <div class="summary-card" [class.blue]="summary.balance >= 0" [class.red]="summary.balance < 0">
           <div class="summary-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
           <div class="summary-info">
             <p class="summary-label">Balance</p>
-            <h3 class="summary-value" [class]="getBalanceClass()">€{{ summary.balance.toFixed(2) }}</h3>
+            <h3 class="summary-value" [class]="getBalanceClass()">&#x20AC;{{ summary.balance.toFixed(2) }}</h3>
           </div>
         </div>
-
         <div class="summary-card purple">
           <div class="summary-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M9 5H7C5.9 5 5 5.9 5 7V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V7C19 5.9 18.1 5 17 5H15M9 5C9 6.1 9.9 7 11 7H13C14.1 7 15 6.1 15 5M9 5C9 3.9 9.9 3 11 3H13C14.1 3 15 3.9 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
           <div class="summary-info">
@@ -94,34 +109,38 @@
         </div>
       </div>
 
-      <!-- Charts Section -->
       <div class="charts-section">
-        <!-- Category Chart -->
         <div class="chart-card">
-          <h2 class="chart-title">Expenses by Category</h2>
+          <div class="chart-header">
+            <h2 class="chart-title">Expenses by Category</h2>
+            <span class="chart-subtitle" *ngIf="expensesByCategory.length > 5">Top 5 + Other</span>
+          </div>
           <div class="chart-container" *ngIf="expensesByCategory.length > 0">
             <canvas id="categoryChart"></canvas>
           </div>
           <div *ngIf="expensesByCategory.length === 0" class="empty-chart">
-            <p>No expense data available for this period</p>
+            <p>No expense data for this period</p>
           </div>
         </div>
-
-        <!-- Trend Chart -->
         <div class="chart-card">
-          <h2 class="chart-title">Income vs Expenses (Last 6 Months)</h2>
-          <div class="chart-container" *ngIf="monthlyTrend.length > 0">
+          <div class="chart-header">
+            <h2 class="chart-title">Income vs Expenses</h2>
+            <span class="chart-subtitle">Last 6 months</span>
+          </div>
+          <div class="chart-container" *ngIf="monthlyTrend.length > 1">
             <canvas id="trendChart"></canvas>
           </div>
-          <div *ngIf="monthlyTrend.length === 0" class="empty-chart">
-            <p>No trend data available</p>
+          <div *ngIf="monthlyTrend.length <= 1" class="empty-chart">
+            <p>More data will appear over time</p>
           </div>
         </div>
       </div>
 
-      <!-- Top Categories -->
       <div class="top-categories-card" *ngIf="expensesByCategory.length > 0">
-        <h2 class="section-title">Top Spending Categories</h2>
+        <div class="chart-header">
+          <h2 class="section-title">Top Spending Categories</h2>
+          <span class="chart-subtitle">vs previous period</span>
+        </div>
         <div class="categories-list">
           <div *ngFor="let category of getTopCategories(); let i = index" class="category-item">
             <div class="category-rank">{{ i + 1 }}</div>
@@ -133,12 +152,199 @@
               <p>{{ category.transactionCount }} transactions</p>
             </div>
             <div class="category-amount">
-              <span class="amount">€{{ category.amount.toFixed(2) }}</span>
+              <span class="amount">&#x20AC;{{ category.amount.toFixed(2) }}</span>
               <span class="percentage">{{ category.percentage.toFixed(1) }}%</span>
             </div>
+            <ng-container *ngIf="getVsLastPeriod(category) as delta; else noPrevData">
+              <div class="category-delta">
+                <span class="delta-badge"
+                  [class.delta-up]="delta.direction === 'up'"
+                  [class.delta-down]="delta.direction === 'down'"
+                  [class.delta-same]="delta.direction === 'same'">
+                  <ng-container *ngIf="delta.direction === 'up'">+{{ delta.pct }}% vs last period</ng-container>
+                  <ng-container *ngIf="delta.direction === 'down'">-{{ delta.pct }}% vs last period</ng-container>
+                  <ng-container *ngIf="delta.direction === 'same'">same as last period</ng-container>
+                </span>
+              </div>
+            </ng-container>
+            <ng-template #noPrevData>
+              <div class="category-delta">
+                <span class="delta-badge delta-same">no previous data</span>
+              </div>
+            </ng-template>
           </div>
         </div>
       </div>
+
+      <div class="forecast-card" *ngIf="forecastMonths.length > 0">
+
+        <div class="forecast-header">
+          <div class="forecast-header-left">
+            <h2 class="section-title">{{ forecastYear }} Annual Forecast</h2>
+            <p class="forecast-subtitle">Past months show actuals &middot; Future months combine recurring + 3-month variable average</p>
+          </div>
+          <div class="forecast-header-right">
+            <button class="whatif-btn" [class.active]="showSimulator" (click)="toggleSimulator()">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
+                <path d="M10 2a5 5 0 0 1 3.54 8.54l-.54.54V13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-1.92l-.54-.54A5 5 0 0 1 10 2z"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M8 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              What if?
+              <span class="whatif-badge" *ngIf="scenarios.length > 0">{{ scenarios.length }}</span>
+            </button>
+            <div class="forecast-year-end" *ngIf="(scenarios.length > 0 ? simulatedYearEnd : baseYearEnd) as dec">
+              <span class="forecast-year-end-label">{{ scenarios.length > 0 ? 'Simulated Year-End' : 'Projected Year-End' }}</span>
+              <div class="forecast-year-end-values">
+                <span class="forecast-year-end-value" [class.positive]="dec.cumulative >= 0" [class.negative]="dec.cumulative < 0">
+                  {{ dec.cumulative >= 0 ? '+' : '' }}&#x20AC;{{ dec.cumulative.toFixed(2) }}
+                </span>
+                <span class="year-end-delta" [class.positive]="yearEndDelta > 0" [class.negative]="yearEndDelta < 0"
+                  *ngIf="scenarios.length > 0 && yearEndDelta !== 0">
+                  {{ yearEndDelta > 0 ? '+' : '&#x2212;' }}&#x20AC;{{ (yearEndDelta < 0 ? -yearEndDelta : yearEndDelta) | number:'1.0-0' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="simulator-panel" *ngIf="showSimulator">
+
+          <div class="sim-header">
+            <div class="sim-title-row">
+              <span class="sim-title">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 2a5 5 0 0 1 3.54 8.54l-.54.54V13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-1.92l-.54-.54A5 5 0 0 1 10 2z"
+                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M8 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                Scenario Simulator
+              </span>
+              <button class="sim-clear-btn" *ngIf="scenarios.length > 0" (click)="clearScenarios()">Clear all</button>
+            </div>
+            <p class="sim-desc">Add hypothetical monthly changes and see how they affect your year-end balance. Nothing is saved.</p>
+          </div>
+
+          <div class="sim-section">
+            <span class="sim-section-label">Quick add</span>
+            <div class="quick-chips">
+              <button *ngFor="let q of QUICK_SCENARIOS"
+                class="quick-chip"
+                [class.chip-active]="isQuickActive(q)"
+                [class.chip-income]="q.type === 'income'"
+                [class.chip-expense]="q.type === 'expense'"
+                (click)="addQuickScenario(q)">
+                <svg *ngIf="isQuickActive(q)" width="11" height="11" viewBox="0 0 16 16" fill="none">
+                  <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                {{ q.label }}
+              </button>
+            </div>
+          </div>
+
+          <div class="sim-section" *ngIf="scenarios.length > 0">
+            <span class="sim-section-label">Active ({{ scenarios.length }})</span>
+            <div class="active-chips">
+              <div *ngFor="let s of scenarios"
+                class="active-chip"
+                [class.chip-income]="s.type === 'income'"
+                [class.chip-expense]="s.type === 'expense'">
+                <span class="active-chip-label">{{ s.label }}</span>
+                <span class="active-chip-delta">
+                  {{ s.monthlyDelta > 0 ? '+' : '&#x2212;' }}&#x20AC;{{ (s.monthlyDelta > 0 ? s.monthlyDelta : -s.monthlyDelta) | number:'1.0-0' }}/mo
+                </span>
+                <button class="active-chip-remove" (click)="removeScenario(s.id)">&times;</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-section">
+            <span class="sim-section-label">Custom scenario</span>
+            <div class="custom-row">
+              <div class="custom-type-toggle">
+                <button type="button" [class.active]="newScenarioType === 'income'"  (click)="newScenarioType = 'income'">&#x2191; Income</button>
+                <button type="button" [class.active]="newScenarioType === 'expense'" (click)="newScenarioType = 'expense'">&#x2193; Expense</button>
+              </div>
+              <input type="text" class="custom-label-input"
+                [(ngModel)]="newScenarioLabel"
+                placeholder="e.g. New gym membership"
+                (keydown.enter)="addCustomScenario()"/>
+              <div class="custom-amount-wrap">
+                <span class="custom-currency">&#x20AC;</span>
+                <input type="number" class="custom-amount-input"
+                  [(ngModel)]="newScenarioAmount"
+                  placeholder="0" min="0"
+                  (keydown.enter)="addCustomScenario()"/>
+                <span class="custom-period">/mo</span>
+              </div>
+              <button class="custom-add-btn" (click)="addCustomScenario()"
+                [disabled]="!newScenarioLabel.trim() || newScenarioAmount <= 0">
+                + Add
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="forecast-table-wrapper">
+          <table class="forecast-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Income</th>
+                <th>Expenses</th>
+                <th>Monthly Balance</th>
+                <th>Cumulative</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of displayMonths; let i = index"
+                [class.row-current]="m.isCurrentMonth"
+                [class.row-past]="m.isPast"
+                [class.row-future]="!m.isPast && !m.isCurrentMonth">
+                <td class="col-month">
+                  <span class="month-name">{{ m.label }}</span>
+                  <span class="month-tag tag-current"  *ngIf="m.isCurrentMonth">Current</span>
+                  <span class="month-tag tag-actual"   *ngIf="m.isPast">Actual</span>
+                  <span class="month-tag tag-forecast" *ngIf="!m.isPast && !m.isCurrentMonth && scenarios.length === 0">Forecast</span>
+                  <span class="month-tag tag-sim"      *ngIf="!m.isPast && scenarios.length > 0">Sim</span>
+                </td>
+                <td class="col-income">
+                  +&#x20AC;{{ m.projectedIncome.toFixed(2) }}
+                  <ng-container *ngIf="getMonthDelta(i) as d">
+                    <span class="sim-delta positive" *ngIf="d.income > 0.5">+&#x20AC;{{ d.income.toFixed(0) }}</span>
+                  </ng-container>
+                </td>
+                <td class="col-expense">
+                  -&#x20AC;{{ m.projectedExpenses.toFixed(2) }}
+                  <ng-container *ngIf="getMonthDelta(i) as d">
+                    <span class="sim-delta negative" *ngIf="d.expenses > 0.5">+&#x20AC;{{ d.expenses.toFixed(0) }}</span>
+                    <span class="sim-delta positive" *ngIf="d.expenses < -0.5">&#x2212;&#x20AC;{{ (-d.expenses).toFixed(0) }}</span>
+                  </ng-container>
+                </td>
+                <td class="col-balance">
+                  <span [class.positive]="m.balance >= 0" [class.negative]="m.balance < 0">
+                    {{ m.balance >= 0 ? '+' : '' }}&#x20AC;{{ m.balance.toFixed(2) }}
+                  </span>
+                </td>
+                <td class="col-cumulative">
+                  <span [class.positive]="m.cumulative >= 0" [class.negative]="m.cumulative < 0">
+                    {{ m.cumulative >= 0 ? '+' : '' }}&#x20AC;{{ m.cumulative.toFixed(2) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="forecast-note">
+          Estimates based on recurring transactions + 3-month variable average.
+          <ng-container *ngIf="scenarios.length > 0">
+            &nbsp;&middot;&nbsp;<strong>Simulation active</strong> &#x2014; {{ scenarios.length }} scenario{{ scenarios.length > 1 ? 's' : '' }} applied. Nothing has been saved.
+          </ng-container>
+        </p>
+      </div>
+
     </div>
   </div>
 </app-navbar>

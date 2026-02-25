@@ -1,5 +1,4 @@
 <app-navbar>
-  <!-- Page Header -->
   <div class="page-header">
     <div class="header-content">
       <div class="header-left">
@@ -9,19 +8,17 @@
           </svg>
         </button>
         <div>
-          <h1 class="page-title">{{ isEditMode ? 'Edit Budget' : 'New Budget' }}</h1>
-          <p class="page-subtitle">{{ isEditMode ? 'Update budget details' : 'Set a spending limit for a category' }}</p>
+          <h1 class="page-title">{{ editMode ? 'Edit Budget' : 'New Budget' }}</h1>
+          <p class="page-subtitle">{{ editMode ? 'Update budget details' : 'Set a spending limit for a category' }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
   <div class="page-content">
     <div class="form-container">
-      <!-- Form -->
-      <form [formGroup]="budgetForm" (ngSubmit)="onSubmit()" class="budget-form">
-        <!-- Error Message -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="budget-form">
+
         <div *ngIf="errorMessage" class="error-banner">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -29,106 +26,80 @@
           <span>{{ errorMessage }}</span>
         </div>
 
-        <!-- Category -->
         <div class="form-group">
           <label for="category">Category *</label>
-          <select 
-            id="category"
-            formControlName="category_id"
-            [class.error]="budgetForm.get('category_id')?.invalid && budgetForm.get('category_id')?.touched">
+          <select id="category" formControlName="category_id"
+            [class.error]="form.get('category_id')?.invalid && form.get('category_id')?.touched">
             <option value="">Select a category...</option>
-            <option *ngFor="let category of expenseCategories" [value]="category.id">
+            <option *ngFor="let category of expenseCats" [value]="category.id">
               {{ category.icon }} {{ category.name }}
             </option>
           </select>
-          <div class="error-text" *ngIf="budgetForm.get('category_id')?.hasError('required') && budgetForm.get('category_id')?.touched">
+          <div class="error-text" *ngIf="form.get('category_id')?.hasError('required') && form.get('category_id')?.touched">
             Category is required
           </div>
         </div>
 
-        <!-- Amount -->
         <div class="form-group">
           <label for="amount">Budget Amount *</label>
           <div class="input-wrapper">
-            <span class="input-prefix">€</span>
-            <input 
-              id="amount"
-              type="number" 
-              formControlName="amount"
-              placeholder="0.00"
-              step="0.01"
-              min="0.01"
-              [class.error]="budgetForm.get('amount')?.invalid && budgetForm.get('amount')?.touched">
+            <span class="input-prefix">&#x20AC;</span>
+            <input id="amount" type="number" formControlName="amount"
+              placeholder="0.00" step="0.01" min="0.01"
+              [class.error]="form.get('amount')?.invalid && form.get('amount')?.touched">
           </div>
-          <div class="error-text" *ngIf="budgetForm.get('amount')?.hasError('required') && budgetForm.get('amount')?.touched">
-            Amount is required
-          </div>
-          <div class="error-text" *ngIf="budgetForm.get('amount')?.hasError('min') && budgetForm.get('amount')?.touched">
-            Amount must be greater than 0
-          </div>
+          <div class="error-text" *ngIf="form.get('amount')?.hasError('required') && form.get('amount')?.touched">Amount is required</div>
+          <div class="error-text" *ngIf="form.get('amount')?.hasError('min') && form.get('amount')?.touched">Amount must be greater than 0</div>
         </div>
 
-        <!-- Period -->
         <div class="form-row">
           <div class="form-group">
             <label for="month">Month *</label>
-            <select 
-              id="month"
-              formControlName="month"
-              [class.error]="budgetForm.get('month')?.invalid && budgetForm.get('month')?.touched">
-              <option *ngFor="let month of months" [value]="month.value">
-                {{ month.label }}
-              </option>
+            <select id="month" formControlName="month"
+              [class.error]="form.get('month')?.invalid && form.get('month')?.touched">
+              <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="year">Year *</label>
-            <select 
-              id="year"
-              formControlName="year"
-              [class.error]="budgetForm.get('year')?.invalid && budgetForm.get('year')?.touched">
-              <option *ngFor="let year of years" [value]="year">
-                {{ year }}
-              </option>
+            <select id="year" formControlName="year"
+              [class.error]="form.get('year')?.invalid && form.get('year')?.touched">
+              <option *ngFor="let year of years" [value]="year">{{ year }}</option>
             </select>
           </div>
         </div>
 
-        <!-- Preview -->
-        <div class="form-group" *ngIf="getSelectedCategory() && budgetForm.get('amount')?.value">
+        <div class="form-group" *ngIf="selectedCat() && form.get('amount')?.value">
           <label>Preview</label>
           <div class="preview-card">
             <div class="preview-header">
               <div class="category-info">
-                <div class="category-icon" [style.background]="getSelectedCategory()?.color + '20'">
-                  <span [style.color]="getSelectedCategory()?.color">{{ getSelectedCategory()?.icon }}</span>
+                <div class="category-icon" [style.background]="selectedCat()?.color + '20'">
+                  <span [style.color]="selectedCat()?.color">{{ selectedCat()?.icon }}</span>
                 </div>
                 <div>
-                  <h3>{{ getSelectedCategory()?.name }}</h3>
+                  <h3>{{ selectedCat()?.name }}</h3>
                   <p class="budget-period">
-                    {{ months[budgetForm.get('month')?.value - 1]?.label }} {{ budgetForm.get('year')?.value }}
+                    {{ months[form.get('month')?.value - 1]?.label }} {{ form.get('year')?.value }}
                   </p>
                 </div>
               </div>
             </div>
             <div class="preview-amount">
               <span class="label">Budget Limit</span>
-              <span class="value">€{{ budgetForm.get('amount')?.value || 0 }}</span>
+              <span class="value">&#x20AC;{{ form.get('amount')?.value || 0 }}</span>
             </div>
           </div>
         </div>
 
-        <!-- Actions -->
         <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="isLoading">
-            Cancel
-          </button>
+          <button type="button" class="btn-secondary" (click)="cancel()" [disabled]="isLoading">Cancel</button>
           <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">{{ isEditMode ? 'Update Budget' : 'Create Budget' }}</span>
-            <span *ngIf="isLoading">{{ isEditMode ? 'Updating...' : 'Creating...' }}</span>
+            <span *ngIf="!isLoading">{{ editMode ? 'Update Budget' : 'Create Budget' }}</span>
+            <span *ngIf="isLoading">{{ editMode ? 'Updating...' : 'Creating...' }}</span>
           </button>
         </div>
+
       </form>
     </div>
   </div>

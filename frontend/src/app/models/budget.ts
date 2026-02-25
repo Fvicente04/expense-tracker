@@ -1,24 +1,26 @@
 export interface Budget {
   id: string;
-  user_id: string;
-  category_id: string;
+  userId: string;
+  categoryId: string;
+  user_id?: string;
+  category_id?: string;
   amount: number;
   spent: number;
   month: number;
   year: number;
-  Category?: {
+  category?: {
     id: string;
     name: string;
     icon: string;
     color: string;
     type: 'income' | 'expense';
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateBudgetRequest {
-  category_id: string;
+  categoryId: string;
   amount: number;
   month: number;
   year: number;

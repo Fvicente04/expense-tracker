@@ -28,33 +28,27 @@ export interface MonthlyReport {
   balance: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ReportService {
   private apiUrl = `${environment.apiUrl}/reports`;
 
   constructor(private http: HttpClient) {}
 
   getSummary(startDate?: string, endDate?: string): Observable<ReportSummary> {
-    let url = `${this.apiUrl}/summary`;
     const params: any = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
-    
-    return this.http.get<ReportSummary>(url, { params });
+    return this.http.get<ReportSummary>(`${this.apiUrl}/summary`, { params });
   }
 
   getByCategory(type: 'income' | 'expense', startDate?: string, endDate?: string): Observable<CategoryReport[]> {
-    let url = `${this.apiUrl}/by-category`;
     const params: any = { type };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
-    
-    return this.http.get<CategoryReport[]>(url, { params });
+    return this.http.get<CategoryReport[]>(`${this.apiUrl}/by-category`, { params });
   }
 
-  getMonthlyTrend(months: number = 6): Observable<MonthlyReport[]> {
+  getMonthlyTrend(months = 6): Observable<MonthlyReport[]> {
     return this.http.get<MonthlyReport[]>(`${this.apiUrl}/monthly-trend`, {
       params: { months: months.toString() }
     });

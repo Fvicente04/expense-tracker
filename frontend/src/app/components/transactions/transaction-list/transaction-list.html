@@ -1,25 +1,33 @@
 <app-navbar>
-  <!-- Page Header -->
+
   <div class="page-header">
     <div class="header-content">
       <div class="header-left">
         <h1 class="page-title">Transactions</h1>
-        <p class="page-subtitle">Track and manage your income and expenses</p>
       </div>
       <button class="btn-primary" (click)="openModal()">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
-        <span>Add Transaction</span>
+        Add Transaction
       </button>
     </div>
   </div>
 
-  <!-- Page Content -->
+
   <div class="page-content">
-    <!-- Filters Card -->
+
+
     <div class="filters-card">
-      <h3>Filters</h3>
+      <div class="filters-top">
+        <h3>Filters</h3>
+        <button class="btn-secondary" (click)="clearFilters()" style="padding: 6px 14px; font-size: 13px;">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          Clear
+        </button>
+      </div>
       <div class="filters-grid">
         <div class="form-group">
           <label>Type</label>
@@ -29,64 +37,86 @@
             <option value="expense">Expense</option>
           </select>
         </div>
-
         <div class="form-group">
           <label>Category</label>
           <select [(ngModel)]="filters.categoryId" (change)="applyFilters()">
             <option value="">All Categories</option>
-            <option *ngFor="let category of categories" [value]="category.id">
-              {{ category.icon }} {{ category.name }}
-            </option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
           </select>
         </div>
-
         <div class="form-group">
           <label>Start Date</label>
           <input type="date" [(ngModel)]="filters.startDate" (change)="applyFilters()" />
         </div>
-
         <div class="form-group">
           <label>End Date</label>
           <input type="date" [(ngModel)]="filters.endDate" (change)="applyFilters()" />
         </div>
       </div>
 
-      <div class="filter-actions">
-        <button class="btn-secondary" (click)="clearFilters()">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          Clear Filters
-        </button>
+      <div class="future-toggle" (click)="showFuture = !showFuture; applyFilters()">
+        <label class="toggle-switch" (click)="$event.stopPropagation()">
+          <input type="checkbox" [checked]="showFuture" (change)="showFuture = !showFuture; applyFilters()"/>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="future-toggle-label">Show future recurring transactions</span>
       </div>
     </div>
 
-    <!-- Summary Section -->
+
     <div class="summary-section">
       <div class="summary-item income">
-        <div class="summary-label">Total Income</div>
-        <div class="summary-value">€{{ formatCurrency(getTotalIncome()) }}</div>
+        <div class="summary-icon">&#x1F4B0;</div>
+        <div class="summary-info">
+          <span class="summary-label">Total Income</span>
+          <div class="summary-value">€{{ fmt(totalIncome()) }}</div>
+        </div>
       </div>
       <div class="summary-item expense">
-        <div class="summary-label">Total Expenses</div>
-        <div class="summary-value">€{{ formatCurrency(getTotalExpenses()) }}</div>
+        <div class="summary-icon">&#x1F4B8;</div>
+        <div class="summary-info">
+          <span class="summary-label">Total Expenses</span>
+          <div class="summary-value">€{{ fmt(totalExpenses()) }}</div>
+        </div>
       </div>
       <div class="summary-item balance">
-        <div class="summary-label">Net Balance</div>
-        <div class="summary-value" [style.color]="getBalance() >= 0 ? '#16a34a' : '#dc2626'">
-          €{{ formatCurrency(getBalance()) }}
+        <div class="summary-icon">&#x2696;&#xFE0F;</div>
+        <div class="summary-info">
+          <span class="summary-label">Net Balance</span>
+          <div class="summary-value" [style.color]="balance() >= 0 ? '#16a34a' : '#dc2626'">
+            €{{ fmt(balance()) }}
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Transactions Table -->
+
     <div class="section-card">
+
+      <div class="bulk-bar" *ngIf="selected.size > 0">
+        <span class="bulk-count">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M13.3334 4L6.00008 11.3333L2.66675 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ selected.size }} selected
+        </span>
+        <div class="bulk-actions">
+          <button class="bulk-clear-btn" (click)="clearSelection()">Clear selection</button>
+          <button class="bulk-delete-btn" (click)="deleteSelected()" [disabled]="bulkDeleting">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ bulkDeleting ? 'Deleting...' : 'Delete ' + selected.size }}
+          </button>
+        </div>
+      </div>
+
       <div *ngIf="isLoading" class="loading-container">
         <div class="spinner"></div>
         <p>Loading transactions...</p>
       </div>
 
-      <div *ngIf="!isLoading && filteredTransactions.length === 0" class="empty-state">
+      <div *ngIf="!isLoading && filtered.length === 0" class="empty-state">
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
           <path d="M32 8V56M16 16H48M16 48H48" stroke="#e8ecf1" stroke-width="4" stroke-linecap="round"/>
           <circle cx="32" cy="32" r="28" stroke="#e8ecf1" stroke-width="4"/>
@@ -94,16 +124,21 @@
         <h3>No transactions found</h3>
         <p>Add your first transaction to get started</p>
         <button class="btn-primary" (click)="openModal()">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
           Add Transaction
         </button>
       </div>
 
-      <table *ngIf="!isLoading && filteredTransactions.length > 0" class="transaction-table">
+      <table *ngIf="!isLoading && filtered.length > 0" class="transaction-table">
         <thead>
           <tr>
+            <th class="col-checkbox">
+              <input type="checkbox" class="row-checkbox"
+                [checked]="allSelected" [indeterminate]="someSelected"
+                (change)="toggleAll($event)" title="Select all"/>
+            </th>
             <th>Date</th>
             <th>Category</th>
             <th>Description</th>
@@ -112,32 +147,39 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transaction of filteredTransactions">
-            <td data-label="Date">{{ formatDate(transaction.date) }}</td>
+          <tr *ngFor="let transaction of filtered" [class.row-selected]="selected.has(transaction.id)">
+            <td class="col-checkbox">
+              <input type="checkbox" class="row-checkbox"
+                [checked]="selected.has(transaction.id)"
+                (change)="toggleOne(transaction.id)"/>
+            </td>
+            <td data-label="Date">
+              {{ fmtDate(transaction.date) }}
+              <span class="recurring-badge" *ngIf="(transaction)['isRecurring']" title="Recurring">&#x1F501;</span>
+            </td>
             <td data-label="Category">
               <div class="category-cell">
-                <div class="category-icon" [style.background]="getCategoryColor(transaction) + '20'">
-                  <span [style.color]="getCategoryColor(transaction)">{{ getCategoryIcon(transaction) }}</span>
+                <div class="category-icon" [style.background]="catColor(transaction) + '20'">
+                  <span [style.color]="catColor(transaction)">{{ catIcon(transaction) }}</span>
                 </div>
-                <span class="category-name">{{ getCategoryName(transaction) }}</span>
+                <span class="category-name">{{ catName(transaction) }}</span>
               </div>
             </td>
             <td data-label="Description">{{ transaction.description }}</td>
             <td data-label="Amount">
               <span class="amount-cell" [class.income]="transaction.type === 'income'" [class.expense]="transaction.type === 'expense'">
-                {{ transaction.type === 'income' ? '+' : '-' }}€{{ formatCurrency(transaction.amount) }}
+                {{ transaction.type === 'income' ? '+' : '–' }}€{{ fmt(transaction.amount) }}
               </span>
             </td>
             <td data-label="Actions" class="actions-cell">
-              <button class="action-btn edit" (click)="editTransaction(transaction)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <button class="action-btn edit" (click)="editTransaction(transaction)" title="Edit">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
-              <button class="action-btn delete" (click)="deleteTransaction(transaction.id)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4H3.33333H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M5.33337 4.00004V2.66671C5.33337 2.31309 5.47385 1.97395 5.72390 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.68699 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4.00004M12.6667 4.00004V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4.00004H12.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <button class="action-btn delete" (click)="deleteTransaction(transaction.id)" title="Delete">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
             </td>
@@ -147,40 +189,44 @@
     </div>
   </div>
 
-  <!-- Modal -->
+
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2 class="modal-title">{{ isEditMode ? 'Edit Transaction' : 'Add Transaction' }}</h2>
+        <h2 class="modal-title">{{ editMode ? 'Edit Transaction' : 'Add Transaction' }}</h2>
         <button class="close-btn" (click)="closeModal()">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </button>
       </div>
 
-      <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="modal-body">
-          <!-- Error Message -->
+
           <div *ngIf="errorMessage" class="error-banner">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
               <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <span>{{ errorMessage }}</span>
           </div>
 
-          <!-- Type Toggle -->
+
           <div class="form-group">
             <label>Type</label>
             <div class="type-toggle">
-              <button type="button" class="type-option" [class.active]="transactionForm.get('type')?.value === 'income'" (click)="transactionForm.patchValue({type: 'income', categoryId: ''})">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <button type="button" class="type-option"
+                [class.active]="form.get('type')?.value === 'income'"
+                (click)="form.patchValue({type: 'income', categoryId: ''})">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                   <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 Income
               </button>
-              <button type="button" class="type-option" [class.active]="transactionForm.get('type')?.value === 'expense'" (click)="transactionForm.patchValue({type: 'expense', categoryId: ''})">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <button type="button" class="type-option"
+                [class.active]="form.get('type')?.value === 'expense'"
+                (click)="form.patchValue({type: 'expense', categoryId: ''})">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                   <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 Expense
@@ -188,50 +234,111 @@
             </div>
           </div>
 
+
           <div class="form-row">
-            <!-- Amount -->
             <div class="form-group">
               <label for="amount">Amount (€)</label>
-              <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00" [class.error]="transactionForm.get('amount')?.touched && transactionForm.get('amount')?.invalid" />
-              <span class="error-message" *ngIf="transactionForm.get('amount')?.touched && transactionForm.get('amount')?.errors?.['required']">Amount is required</span>
+              <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00"
+                [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid"/>
+              <span class="error-message" *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is required</span>
             </div>
-
-            <!-- Date -->
             <div class="form-group">
               <label for="date">Date</label>
-              <input type="date" id="date" formControlName="date" [class.error]="transactionForm.get('date')?.touched && transactionForm.get('date')?.invalid" />
-              <span class="error-message" *ngIf="transactionForm.get('date')?.touched && transactionForm.get('date')?.errors?.['required']">Date is required</span>
+              <input type="date" id="date" formControlName="date"
+                [class.error]="form.get('date')?.touched && form.get('date')?.invalid"/>
+              <span class="error-message" *ngIf="form.get('date')?.touched && form.get('date')?.errors?.['required']">Date is required</span>
             </div>
           </div>
 
-          <!-- Category -->
+
           <div class="form-group">
             <label for="categoryId">Category</label>
-            <select id="categoryId" formControlName="categoryId" [class.error]="transactionForm.get('categoryId')?.touched && transactionForm.get('categoryId')?.invalid">
+            <select id="categoryId" formControlName="categoryId"
+              [class.error]="form.get('categoryId')?.touched && form.get('categoryId')?.invalid">
               <option value="">Select a category</option>
-              <option *ngFor="let category of getFilteredCategories()" [value]="category.id">
+              <option *ngFor="let category of filteredCats()" [value]="category.id">
                 {{ category.icon }} {{ category.name }}
               </option>
             </select>
-            <span class="error-message" *ngIf="transactionForm.get('categoryId')?.touched && transactionForm.get('categoryId')?.errors?.['required']">Category is required</span>
+            <span class="error-message" *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is required</span>
           </div>
 
-          <!-- Description -->
+
           <div class="form-group">
             <label for="description">Description</label>
-            <textarea id="description" formControlName="description" rows="3" placeholder="Enter transaction details..." [class.error]="transactionForm.get('description')?.touched && transactionForm.get('description')?.invalid"></textarea>
-            <span class="error-message" *ngIf="transactionForm.get('description')?.touched && transactionForm.get('description')?.errors?.['required']">Description is required</span>
+            <textarea id="description" formControlName="description" rows="2"
+              placeholder="Enter transaction details..."
+              [class.error]="form.get('description')?.touched && form.get('description')?.invalid">
+            </textarea>
+            <span class="error-message" *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is required</span>
           </div>
+
+
+          <div class="recurring-section" *ngIf="!editMode">
+
+            <div class="recurring-toggle-row" (click)="toggleRecurring()">
+              <div class="recurring-toggle-info">
+                <span class="recurring-icon">&#x1F501;</span>
+                <div>
+                  <span class="recurring-label">Recurring transaction</span>
+                  <p class="recurring-desc">Repeat automatically every week, month or year</p>
+                </div>
+              </div>
+              <label class="toggle-switch" (click)="$event.stopPropagation()">
+                <input type="checkbox"
+                  [checked]="form.get('isRecurring')?.value"
+                  (change)="toggleRecurring()"/>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="recurring-options" *ngIf="form.get('isRecurring')?.value">
+              <div class="recurring-fields">
+
+                <div class="form-group">
+                  <label>Frequency</label>
+                  <div class="frequency-options">
+                    <button type="button" class="freq-btn"
+                      [class.active]="form.get('recurringFrequency')?.value === 'weekly'"
+                      (click)="setFrequency('weekly')">Weekly</button>
+                    <button type="button" class="freq-btn"
+                      [class.active]="form.get('recurringFrequency')?.value === 'monthly'"
+                      (click)="setFrequency('monthly')">Monthly</button>
+                    <button type="button" class="freq-btn"
+                      [class.active]="form.get('recurringFrequency')?.value === 'yearly'"
+                      (click)="setFrequency('yearly')">Yearly</button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>End date <span class="optional-tag">optional</span></label>
+                  <input type="date" formControlName="recurringEndDate"
+                    [min]="form.get('date')?.value"/>
+                  <p class="field-hint">Leave empty to repeat indefinitely (max 60 occurrences)</p>
+                </div>
+
+                <div class="recurring-preview" *ngIf="form.get('recurringFrequency')?.value">
+                  <span>&#x1F4C5;</span>
+                  <span>{{ recurringPreview() }}</span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
           <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Add' }} Transaction</span>
-            <span *ngIf="isLoading">{{ isEditMode ? 'Updating...' : 'Adding...' }}</span>
+            <span *ngIf="!isLoading">{{ editMode ? 'Update' : 'Add' }} Transaction</span>
+            <span *ngIf="isLoading">{{ editMode ? 'Updating...' : 'Adding...' }}</span>
           </button>
         </div>
       </form>
     </div>
   </div>
+
 </app-navbar>

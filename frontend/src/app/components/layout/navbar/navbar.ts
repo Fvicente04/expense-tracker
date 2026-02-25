@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../services/auth.service';
+import { ThemeService } from '../../../services/theme';
 
 @Component({
   selector: 'app-navbar',
@@ -13,52 +14,39 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class NavbarComponent implements OnInit {
   isExpanded = false;
-  isMobileMenuOpen = false;
+  mobileOpen = false;
   isMobile = false;
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private theme: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.checkMobile();
-
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.closeMobileMenu();
-      });
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => this.mobileOpen = false);
   }
 
   @HostListener('window:resize')
-  onResize(): void {
-    this.checkMobile();
-  }
-
   checkMobile(): void {
     this.isMobile = window.innerWidth <= 768;
-    if (!this.isMobile) {
-      this.isMobileMenuOpen = false;
-    }
+    if (!this.isMobile) this.mobileOpen = false;
   }
 
   toggleSidebar(): void {
-    if (!this.isMobile) {
-      this.isExpanded = !this.isExpanded;
-    }
+    if (!this.isMobile) this.isExpanded = !this.isExpanded;
   }
 
-  toggleMobileMenu(): void {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  }
-
-  closeMobileMenu(): void {
-    this.isMobileMenuOpen = false;
-  }
+  toggleMobileMenu(): void { this.mobileOpen = !this.mobileOpen; }
 
   logout(): void {
     this.authService.logout();
-    this.router.navigate(['/login']);
   }
+
+  toggleTheme(): void { this.theme.toggle(); }
+
+  get isDark(): boolean { return this.theme.isDark(); }
 }

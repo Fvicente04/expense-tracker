@@ -1,158 +1,203 @@
 <app-navbar>
-  <!-- Page Header -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="header-left">
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Welcome back! Here's your financial overview</p>
-      </div>
-    </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading dashboard...</p>
   </div>
 
-  <!-- Page Content -->
-  <div class="page-content">
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Loading dashboard...</p>
+  <div *ngIf="!isLoading" class="dashboard-content">
+
+    <div class="top-header">
+      <div>
+        <p class="greeting">Good {{ greeting() }}, {{ userName }} &#x1F44B;</p>
+        <h1 class="page-title">Financial Overview</h1>
+      </div>
+      <div class="date-pill">{{ todayLabel }} &middot; Day {{ dayOfMonth }} of {{ totalDaysInMonth }}</div>
     </div>
 
-    <div *ngIf="!isLoading">
-      <!-- Budget Alerts -->
-      <app-budget-alerts></app-budget-alerts>
-
-      <!-- Welcome Section -->
-      <div class="welcome-section">
-        <div class="welcome-text">
-          <h2>Financial Overview</h2>
-          <p>Track your income, expenses, and budgets all in one place</p>
-        </div>
-      </div>
-
-      <!-- Summary Cards -->
-      <div class="summary-cards">
-        <div class="summary-card">
-          <div class="summary-icon green">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="summary-info">
-            <p class="summary-label">Total Income</p>
-            <h3 class="summary-value income">€{{ formatCurrency(totalIncome) }}</h3>
-            <p class="summary-note">This month</p>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-icon red">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="summary-info">
-            <p class="summary-label">Total Expenses</p>
-            <h3 class="summary-value expense">€{{ formatCurrency(totalExpense) }}</h3>
-            <p class="summary-note">This month</p>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-icon blue">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="summary-info">
-            <p class="summary-label">Balance</p>
-            <h3 class="summary-value" [style.color]="balance >= 0 ? '#16a34a' : '#dc2626'">€{{ formatCurrency(balance) }}</h3>
-            <p class="summary-note">This month</p>
-          </div>
-        </div>
-
-        <div class="summary-card">
-          <div class="summary-icon purple">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="summary-info">
-            <p class="summary-label">Transactions</p>
-            <h3 class="summary-value">{{ transactionCount }}</h3>
-            <p class="summary-note">This month</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Section -->
-      <div class="charts-section">
-        <!-- Expenses by Category Chart -->
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3>Expenses by Category</h3>
-          </div>
-          <div class="chart-container" *ngIf="expensesByCategory.length > 0">
-            <canvas id="dashboardCategoryChart"></canvas>
-          </div>
-          <div *ngIf="expensesByCategory.length === 0" class="empty-chart">
-            <p>No expense data for this month</p>
-          </div>
-        </div>
-
-        <!-- Monthly Trend Chart -->
-        <div class="chart-card">
-          <div class="chart-header">
-            <h3>Income vs Expenses (6 Months)</h3>
-          </div>
-          <div class="chart-container" *ngIf="monthlyTrend.length > 0">
-            <canvas id="dashboardTrendChart"></canvas>
-          </div>
-          <div *ngIf="monthlyTrend.length === 0" class="empty-chart">
-            <p>No trend data available</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <button class="action-card" (click)="goToTransactions()">
-          <div class="action-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 4V20M12 4L8 8M12 4L16 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="action-info">
-            <h3>Add Transaction</h3>
-            <p>Record income or expense</p>
-          </div>
-        </button>
-
-        <button class="action-card" (click)="goToBudgets()">
-          <div class="action-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="action-info">
-            <h3>Manage Budgets</h3>
-            <p>Set spending limits</p>
-          </div>
-        </button>
-
-        <button class="action-card" (click)="goToReports()">
-          <div class="action-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M16 8V16M12 11V16M8 14V16M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="action-info">
-            <h3>View Reports</h3>
-            <p>Analyze your spending</p>
-          </div>
-        </button>
-      </div>
+    <div *ngIf="alertBudget" class="alert-banner">
+      <span class="alert-icon">&#x26A0;&#xFE0F;</span>
+      <span class="alert-text">
+        <strong>{{ alertBudget.category?.name || 'A budget' }}</strong>
+        is at {{ budgetPct(alertBudget) | number:'1.0-0' }}% &mdash;
+        only &#x20AC;{{ fmt(budgetRemaining(alertBudget)) }} remaining for {{ daysRemaining }} days.
+      </span>
+      <span class="alert-action" (click)="goTo('budgets')">Adjust &rarr;</span>
     </div>
+
+    <div class="hero-card"
+         [class.hero-warning]="financialStatus === 'warning'"
+         [class.hero-danger]="financialStatus === 'danger'">
+
+      <div class="hero-left">
+        <p class="hero-label">&#x2726; Safe to spend today</p>
+        <div class="hero-amount">
+          <span class="hero-currency">&#x20AC;</span>{{ fmt(safeToSpend) }}
+        </div>
+        <p class="hero-subtitle">
+          Spent <strong>&#x20AC;{{ fmt(totalExpense) }}</strong> this month
+          &middot; Balance <strong>&#x20AC;{{ fmt(balance) }}</strong>
+          &middot; {{ daysRemaining }} days remaining<br>
+          <span [class]="'pace-label pace-' + financialStatus">
+            <ng-container *ngIf="financialStatus === 'good'">You're on track for this month.</ng-container>
+            <ng-container *ngIf="financialStatus === 'warning'">Some budgets need attention.</ng-container>
+            <ng-container *ngIf="financialStatus === 'danger'">Balance is negative &mdash; review your spending.</ng-container>
+          </span>
+        </p>
+      </div>
+
+      <div class="hero-right">
+        <div class="status-badge" [class]="'status-' + financialStatus">
+          <span class="status-dot"></span>{{ statusLabel }}
+        </div>
+        <div class="hero-meta">
+          <span>Income: <strong>&#x20AC;{{ fmt(totalIncome) }}</strong></span>
+          <span>Spent: <strong>&#x20AC;{{ fmt(totalExpense) }}</strong></span>
+          <span>Balance: <strong>&#x20AC;{{ fmt(balance) }}</strong></span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="stats-row">
+
+      <div class="stat-card">
+        <div class="stat-icon icon-green">&#x1F4B0;</div>
+        <div class="stat-info">
+          <p class="stat-label">Income this month</p>
+          <p class="stat-value value-green">&#x20AC;{{ fmt(totalIncome) }}</p>
+          <p class="stat-delta"
+             [class.delta-up]="incomeVsLastMonth >= 0"
+             [class.delta-down]="incomeVsLastMonth < 0">
+            {{ incomeVsLastMonth >= 0 ? '&#x2191;' : '&#x2193;' }} {{ fmtDelta(incomeVsLastMonth) }} vs last month
+          </p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-red">&#x1F4B8;</div>
+        <div class="stat-info">
+          <p class="stat-label">Spent this month</p>
+          <p class="stat-value value-red">&#x20AC;{{ fmt(totalExpense) }}</p>
+          <p class="stat-delta"
+             [class.delta-up]="expenseVsLastMonth <= 0"
+             [class.delta-down]="expenseVsLastMonth > 0">
+            {{ expenseVsLastMonth <= 0 ? '&#x2193;' : '&#x2191;' }} {{ fmtDelta(expenseVsLastMonth) }} vs last month
+          </p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">&#x1F4C5;</div>
+        <div class="stat-info">
+          <p class="stat-label">Monthly average</p>
+          <p class="stat-value value-blue">&#x20AC;{{ fmt(monthlyAvgExpense) }}</p>
+          <p class="stat-delta" [class.delta-up]="monthlyAvgExpense <= totalExpense" [class.delta-down]="monthlyAvgExpense > totalExpense">
+            <ng-container *ngIf="avgMonthsLoaded > 0">
+              {{ totalExpense <= monthlyAvgExpense ? '&#x2193; Below' : '&#x2191; Above' }} avg &middot; &#x20AC;{{ fmt(monthlyAvgIncome) }} income avg
+            </ng-container>
+            <ng-container *ngIf="avgMonthsLoaded === 0">Not enough history yet</ng-container>
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-grid">
+
+      <div class="left-col">
+
+        <div class="card">
+          <div class="card-title">
+            Budget Snapshot
+            <span class="card-link" (click)="goTo('budgets')">Manage &rarr;</span>
+          </div>
+
+          <div *ngIf="budgetsSortedByRisk.length === 0" class="empty-state">
+            <p>No budgets set for this month.</p>
+            <button class="btn-link" (click)="goTo('budgets')">Create a budget &rarr;</button>
+          </div>
+
+          <div class="budget-list" *ngIf="budgetsSortedByRisk.length > 0">
+            <ng-container *ngFor="let budget of budgetsSortedByRisk; let i = index">
+              <div *ngIf="i > 0 && riskGroupChanged(i)" class="budget-divider"></div>
+              <div class="budget-item">
+                <div class="budget-top">
+                  <span class="budget-name">
+                    <span class="budget-emoji">{{ budget.category?.icon || '&#x1F4C1;' }}</span>
+                    {{ budget.category?.name || 'Other' }}
+                  </span>
+                  <span class="budget-numbers">
+                    <strong>&#x20AC;{{ fmt(budget.spent || 0) }}</strong> / &#x20AC;{{ fmt(budget.amount) }}
+                  </span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill"
+                       [class]="'bar-' + budgetStatus(budget)"
+                       [style.width.%]="budgetPct(budget)">
+                  </div>
+                </div>
+                <p *ngIf="budgetStatus(budget) === 'danger'" class="budget-alert">
+                  &#x26A0; &#x20AC;{{ fmt(budgetRemaining(budget)) }} left &middot; {{ daysRemaining }} days to go
+                </p>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Spending this week
+            <span class="card-link" (click)="goTo('reports')">Full report &rarr;</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="weekChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card right-col">
+        <div class="card-title">
+          Recent
+          <span class="card-link" (click)="goTo('transactions')">All &rarr;</span>
+        </div>
+
+        <div class="tx-today-total">
+          <span>Today</span>
+          <strong *ngIf="spentToday > 0">&ndash;&#x20AC;{{ fmt(spentToday) }}</strong>
+          <span *ngIf="spentToday === 0" class="no-spend-today">No spending today &#x1F389;</span>
+        </div>
+
+        <div *ngIf="recentTransactions.length === 0" class="empty-state">
+          <p>No transactions this month.</p>
+          <button class="btn-link" (click)="goTo('transactions')">Add one &rarr;</button>
+        </div>
+
+        <div class="tx-list" *ngIf="recentTransactions.length > 0">
+          <div class="tx-item"
+               *ngFor="let tx of recentTransactions"
+               (click)="goTo('transactions')">
+            <div class="tx-icon">{{ tx.category?.icon || '&#x1F4B3;' }}</div>
+            <div class="tx-details">
+              <p class="tx-name">{{ tx.description || tx.category?.name }}</p>
+              <p class="tx-cat">{{ tx.category?.name }}</p>
+            </div>
+            <div class="tx-right">
+              <p class="tx-amount" [class.income]="tx.type === 'income'">
+                {{ tx.type === 'income' ? '+' : '&ndash;' }}&#x20AC;{{ fmt(tx.amount) }}
+              </p>
+              <p class="tx-date">{{ fmtTxDate(tx.date) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="add-btn" (click)="goTo('transactions', {openModal: true})">+ Add Transaction</button>
+
+      </div>
+
+    </div>
+
   </div>
+
 </app-navbar>

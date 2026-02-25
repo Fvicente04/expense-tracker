@@ -1,118 +1,264 @@
 <app-navbar>
-  <!-- Page Header -->
   <div class="page-header">
     <div class="header-content">
       <div class="header-left">
-        <h1 class="page-title">Categorias</h1>
-        <p class="page-subtitle">Organize suas receitas e despesas</p>
+        <h1 class="page-title">Categories</h1>
       </div>
-      <button class="btn-primary" (click)="goToAddCategory()">
+      <button class="btn-primary" (click)="openModal()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
         </svg>
-        <span>Nova Categoria</span>
+        <span>New Category</span>
       </button>
     </div>
   </div>
 
-  <!-- Page Content -->
   <div class="page-content">
-    <!-- Loading State -->
+
     <div *ngIf="isLoading" class="loading-container">
       <div class="spinner"></div>
-      <p>Carregando categorias...</p>
+      <p>Loading categories...</p>
     </div>
 
-    <!-- Error State -->
-    <div *ngIf="errorMessage" class="error-banner">
+    <div *ngIf="errorMessage && !showModal" class="error-banner">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
       </svg>
       <span>{{ errorMessage }}</span>
     </div>
 
-    <!-- Categories Grid -->
-    <div *ngIf="!isLoading && categories.length > 0">
-      <!-- Expense Categories -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2 class="section-title">💸 Categorias de Despesas</h2>
-          <p class="section-subtitle">{{ getExpenseCategories().length }} categoria(s)</p>
-        </div>
-
-        <div class="categories-grid">
-          <div *ngFor="let category of getExpenseCategories()" class="category-card">
-            <div class="category-icon" [style.background]="category.color + '20'">
-              <span [style.color]="category.color">{{ category.icon }}</span>
-            </div>
-            <div class="category-info">
-              <h3>{{ category.name }}</h3>
-              <span class="category-badge expense">Despesa</span>
-            </div>
-            <div class="category-actions">
-              <button class="action-btn edit" (click)="editCategory(category.id)" *ngIf="!category.is_default">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9441 1.59129C12.1722 1.49653 12.4165 1.44769 12.6633 1.44769C12.9101 1.44769 13.1544 1.49653 13.3825 1.59129C13.6106 1.68605 13.8183 1.82494 13.9933 2.00004C14.1684 2.17513 14.3073 2.38282 14.4021 2.61091C14.4968 2.839 14.5457 3.08334 14.5457 3.33004C14.5457 3.57674 14.4968 3.82107 14.4021 4.04916C14.3073 4.27725 14.1684 4.48494 13.9933 4.66004L5.00001 13.6534L1.33334 14.6667L2.34667 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <span *ngIf="category.is_default" class="default-badge">Padrão</span>
-            </div>
-          </div>
-        </div>
+    <div *ngIf="!isLoading && categories.length > 0" class="search-bar">
+      <div class="search-input-wrap">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="6.5" cy="6.5" r="5" stroke="#8892a4" stroke-width="1.5"/>
+          <path d="M10.5 10.5L14 14" stroke="#8892a4" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" class="search-input" placeholder="Search categories..." [(ngModel)]="searchQuery" />
+        <button *ngIf="searchQuery" class="search-clear" (click)="searchQuery = ''">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
-
-      <!-- Income Categories -->
-      <div class="section-card">
-        <div class="section-header">
-          <h2 class="section-title">💰 Categorias de Receitas</h2>
-          <p class="section-subtitle">{{ getIncomeCategories().length }} categoria(s)</p>
-        </div>
-
-        <div class="categories-grid">
-          <div *ngFor="let category of getIncomeCategories()" class="category-card">
-            <div class="category-icon" [style.background]="category.color + '20'">
-              <span [style.color]="category.color">{{ category.icon }}</span>
-            </div>
-            <div class="category-info">
-              <h3>{{ category.name }}</h3>
-              <span class="category-badge income">Receita</span>
-            </div>
-            <div class="category-actions">
-              <button class="action-btn edit" (click)="editCategory(category.id)" *ngIf="!category.is_default">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9441 1.59129C12.1722 1.49653 12.4165 1.44769 12.6633 1.44769C12.9101 1.44769 13.1544 1.49653 13.3825 1.59129C13.6106 1.68605 13.8183 1.82494 13.9933 2.00004C14.1684 2.17513 14.3073 2.38282 14.4021 2.61091C14.4968 2.839 14.5457 3.08334 14.5457 3.33004C14.5457 3.57674 14.4968 3.82107 14.4021 4.04916C14.3073 4.27725 14.1684 4.48494 13.9933 4.66004L5.00001 13.6534L1.33334 14.6667L2.34667 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33333 6.66667 1.33333H9.33333C10 1.33333 10.6667 2 10.6667 2.66667V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <span *ngIf="category.is_default" class="default-badge">Padrão</span>
-            </div>
-          </div>
-        </div>
+      <div class="filter-tabs">
+        <button class="filter-tab" [class.active]="typeFilter === 'all'"     (click)="typeFilter = 'all'">All</button>
+        <button class="filter-tab" [class.active]="typeFilter === 'expense'" (click)="typeFilter = 'expense'">Expenses</button>
+        <button class="filter-tab" [class.active]="typeFilter === 'income'"  (click)="typeFilter = 'income'">Income</button>
       </div>
     </div>
 
-    <!-- Empty State -->
+    <div *ngIf="!isLoading && categories.length > 0">
+
+      <div class="section-card" *ngIf="typeFilter !== 'income' && filteredExpense().length > 0">
+        <div class="section-header">
+          <h2 class="section-title">Expense Categories</h2>
+          <p class="section-subtitle">{{ filteredExpense().length }} category(ies)</p>
+        </div>
+        <div class="categories-grid">
+          <div *ngFor="let category of filteredExpense()" class="category-card">
+            <div class="category-icon" [style.background]="category.color + '20'">
+              <span [style.color]="category.color">{{ category.icon }}</span>
+            </div>
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              <span class="category-badge expense">Expense</span>
+            </div>
+            <div class="category-actions">
+              <button class="action-btn edit" (click)="editCategory(category)" *ngIf="!category.is_default">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4H3.33333H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M5.33337 4.00004V2.66671C5.33337 2.31309 5.47385 1.97395 5.72390 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.68699 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4.00004M12.6667 4.00004V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4.00004H12.6667Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <span *ngIf="category.is_default" class="default-badge">Default</span>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="filteredExpense().length === 0" class="no-results">No expense categories match "{{ searchQuery }}"</p>
+      </div>
+
+      <div class="section-card" *ngIf="typeFilter !== 'expense' && filteredIncome().length > 0">
+        <div class="section-header">
+          <h2 class="section-title">Income Categories</h2>
+          <p class="section-subtitle">{{ filteredIncome().length }} category(ies)</p>
+        </div>
+        <div class="categories-grid">
+          <div *ngFor="let category of filteredIncome()" class="category-card">
+            <div class="category-icon" [style.background]="category.color + '20'">
+              <span [style.color]="category.color">{{ category.icon }}</span>
+            </div>
+            <div class="category-info">
+              <h3>{{ category.name }}</h3>
+              <span class="category-badge income">Income</span>
+            </div>
+            <div class="category-actions">
+              <button class="action-btn edit" (click)="editCategory(category)" *ngIf="!category.is_default">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4H3.33333H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M5.33337 4.00004V2.66671C5.33337 2.31309 5.47385 1.97395 5.72390 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.68699 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4.00004M12.6667 4.00004V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4.00004H12.6667Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <span *ngIf="category.is_default" class="default-badge">Default</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card" *ngIf="filteredExpense().length === 0 && filteredIncome().length === 0">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="22" cy="22" r="16" stroke="#e8ecf1" stroke-width="3"/>
+            <path d="M34 34L42 42" stroke="#e8ecf1" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <h3>No results for "{{ searchQuery }}"</h3>
+          <p>Try a different search term</p>
+        </div>
+      </div>
+
+    </div>
+
     <div *ngIf="!isLoading && categories.length === 0" class="section-card">
       <div class="empty-state">
-        <div class="empty-icon">📂</div>
-        <h3>Nenhuma categoria encontrada</h3>
-        <p>Comece criando categorias para organizar suas transações!</p>
-        <button class="btn-primary" (click)="goToAddCategory()">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <path d="M32 8V56M16 16H48M16 48H48" stroke="#e8ecf1" stroke-width="4" stroke-linecap="round" />
+          <circle cx="32" cy="32" r="28" stroke="#e8ecf1" stroke-width="4" />
+        </svg>
+        <h3>No categories found</h3>
+        <p>Start by creating categories to organize your transactions</p>
+        <button class="btn-primary" (click)="openModal()">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          <span>Criar Primeira Categoria</span>
+          <span>Create First Category</span>
         </button>
       </div>
     </div>
+
   </div>
+
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2 class="modal-title">{{ editMode ? 'Edit Category' : 'Add Category' }}</h2>
+        <button class="close-btn" (click)="closeModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" id="categoryForm">
+        <div class="modal-body">
+
+          <div *ngIf="errorMessage" class="error-banner">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <div class="form-group">
+            <label>Type</label>
+            <div class="type-toggle">
+              <button type="button" class="type-option" [class.active]="selectedType === 'income'" (click)="selectType('income')">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Income
+              </button>
+              <button type="button" class="type-option" [class.active]="selectedType === 'expense'" (click)="selectType('expense')">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Expense
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="name">Category Name</label>
+            <input type="text" id="name" formControlName="name" placeholder="Ex: Food, Transport, Salary..."
+              [class.error]="form.get('name')?.touched && form.get('name')?.invalid" />
+            <span class="error-message" *ngIf="form.get('name')?.touched && form.get('name')?.errors?.['required']">Name is required</span>
+            <span class="error-message" *ngIf="form.get('name')?.touched && form.get('name')?.errors?.['minlength']">Minimum 2 characters</span>
+          </div>
+
+          <div class="form-group">
+            <label>Icon &mdash; <span class="selected-icon-preview">{{ selectedIcon }}</span></label>
+            <div class="icon-group-tabs">
+              <button *ngFor="let group of iconGroups" type="button" class="icon-group-tab"
+                [class.active]="activeIconGroup === group.label" (click)="activeIconGroup = group.label">
+                {{ group.label }}
+              </button>
+            </div>
+            <div class="icon-grid-wrapper">
+              <div class="icon-grid">
+                <button *ngFor="let icon of filteredIcons" type="button" class="icon-btn"
+                  [class.active]="selectedIcon === icon" (click)="selectedIcon = icon">
+                  {{ icon }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Color</label>
+            <div class="color-grid">
+              <button *ngFor="let color of presetColors" type="button" class="color-btn"
+                [class.active]="selectedColor === color" [style.background]="color" (click)="selectColor(color)">
+              </button>
+            </div>
+            <div class="color-custom">
+              <label class="color-custom-label">
+                <div class="color-custom-preview" [style.background]="customColor"></div>
+                <span>Custom color</span>
+                <input type="color" class="color-native-input" [value]="customColor" (input)="onCustomColor($event)" />
+              </label>
+              <span class="color-hex-tag">{{ selectedColor }}</span>
+            </div>
+          </div>
+
+          <div class="preview-card">
+            <div class="preview-icon" [style.background]="selectedColor + '20'">
+              <span [style.color]="selectedColor">{{ selectedIcon }}</span>
+            </div>
+            <div class="preview-info">
+              <h3>{{ form.get('name')?.value || 'Category Name' }}</h3>
+              <span class="preview-badge" [class.expense]="selectedType === 'expense'" [class.income]="selectedType === 'income'">
+                {{ selectedType | titlecase }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isLoading">
+            <span *ngIf="!isLoading">{{ editMode ? 'Update' : 'Add' }} Category</span>
+            <span *ngIf="isLoading">{{ editMode ? 'Updating...' : 'Creating...' }}</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
 </app-navbar>

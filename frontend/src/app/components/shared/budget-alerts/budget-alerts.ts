@@ -23,71 +23,52 @@ export class BudgetAlertsComponent implements OnInit {
   isLoading = true;
   showAlerts = true;
 
-  constructor(
-    private budgetService: BudgetService,
-    private router: Router
-  ) {}
+  constructor(private budgetService: BudgetService, private router: Router) {}
 
-  ngOnInit(): void {
-    this.loadBudgetAlerts();
-  }
+  ngOnInit(): void { this.loadBudgetAlerts(); }
 
   loadBudgetAlerts(): void {
     this.budgetService.getAll().subscribe({
-      next: (budgets) => {
-        this.alerts = budgets
-          .map(budget => {
-            const spent = Number(budget.spent || 0);
-            const amount = Number(budget.amount || 0);
-            const percentage = amount > 0 ? (spent / amount) * 100 : 0;
+      next: budgets => {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const year  = now.getFullYear();
 
-            if (percentage >= 100) {
-              return {
-                budget,
-                percentage,
-                status: 'exceeded' as const,
-                message: `Budget exceeded by €${(spent - amount).toFixed(2)}`
-              };
-            } else if (percentage >= 90) {
-              return {
-                budget,
-                percentage,
-                status: 'danger' as const,
-                message: `${percentage.toFixed(0)}% of budget used - €${(amount - spent).toFixed(2)} remaining`
-              };
-            } else if (percentage >= 80) {
-              return {
-                budget,
-                percentage,
-                status: 'warning' as const,
-                message: `${percentage.toFixed(0)}% of budget used - €${(amount - spent).toFixed(2)} remaining`
-              };
-            }
+        this.alerts = budgets
+          .filter(b => b.month === month && b.year === year)
+          .map(budget => {
+            const spent  = Number(budget.spent  || 0);
+            const amount = Number(budget.amount || 0);
+            const pct    = amount > 0 ? (spent / amount) * 100 : 0;
+            const rem    = (amount - spent).toFixed(2);
+
+            if (pct >= 100) return {
+              budget, percentage: pct, status: 'exceeded' as const,
+              message: `Budget exceeded by \u20AC${(spent - amount).toFixed(2)}`
+            };
+            if (pct >= 90) return {
+              budget, percentage: pct, status: 'danger' as const,
+              message: `${pct.toFixed(0)}% used \u2014 \u20AC${rem} remaining`
+            };
+            if (pct >= 80) return {
+              budget, percentage: pct, status: 'warning' as const,
+              message: `${pct.toFixed(0)}% used \u2014 \u20AC${rem} remaining`
+            };
             return null;
           })
-          .filter(alert => alert !== null) as BudgetAlert[];
+          .filter(a => a !== null) as BudgetAlert[];
 
         this.isLoading = false;
       },
-      error: (error) => {
-        console.error('Error loading budget alerts:', error);
-        this.isLoading = false;
-      }
+      error: () => this.isLoading = false
     });
   }
 
-  dismissAlert(index: number): void {
-    this.alerts.splice(index, 1);
-    if (this.alerts.length === 0) {
-      this.showAlerts = false;
-    }
+  dismissAlert(i: number): void {
+    this.alerts.splice(i, 1);
+    if (!this.alerts.length) this.showAlerts = false;
   }
 
-  goToBudgets(): void {
-    this.router.navigate(['/budgets']);
-  }
-
-  closeAllAlerts(): void {
-    this.showAlerts = false;
-  }
+  goToBudgets(): void { this.router.navigate(['/budgets']); }
+  closeAllAlerts(): void { this.showAlerts = false; }
 }

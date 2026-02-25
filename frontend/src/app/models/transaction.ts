@@ -1,5 +1,3 @@
-import { Category } from './category';
-
 export interface Transaction {
   id: string;
   userId: string;
@@ -9,24 +7,35 @@ export interface Transaction {
   description: string;
   date: string;
   notes?: string;
-  category?: Category;
-  createdAt?: Date;
-  updatedAt?: Date;
+  category?: {
+    name: string;
+    icon: string;
+    color: string;
+  };
+  // Recurring fields
+  isRecurring?: boolean;
+  recurringFrequency?: 'weekly' | 'monthly' | 'yearly' | null;
+  recurringEndDate?: string | null;
+  recurringGroupId?: string | null;
 }
 
 export interface CreateTransactionRequest {
-  category_id: string;
   type: 'income' | 'expense';
   amount: number;
   description: string;
   date: string;
+  categoryId: string;
   notes?: string;
+  isRecurring?: boolean;
+  recurringFrequency?: 'weekly' | 'monthly' | 'yearly' | null;
+  recurringEndDate?: string | null;
 }
 
 export interface UpdateTransactionRequest {
-  category_id?: string;
+  type?: 'income' | 'expense';
   amount?: number;
   description?: string;
   date?: string;
+  categoryId?: string;
   notes?: string;
 }
