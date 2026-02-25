@@ -376,3 +376,34 @@ body.dark-mode .delta-badge.delta-same { background: rgba(255,255,255,0.06); col
 @media (min-width: 769px) {
   .hide-desktop { display: none !important; }
 }
+
+body.dark-mode .category-name,
+body.dark-mode .category-card h3,
+body.dark-mode .category-card h4,
+body.dark-mode .budget-name,
+body.dark-mode .category-info h3,
+body.dark-mode .budget-card h3,
+body.dark-mode .budget-card h4,
+body.dark-mode .month-display h2,
+body.dark-mode .summary-value,
+body.dark-mode .summary-info h3,
+body.dark-mode .progress-info .spent  { color: #f0f2f8 !important; }
+
+body.dark-mode .category-type,
+body.dark-mode .budget-period,
+body.dark-mode .date-cell,
+body.dark-mode .summary-label,
+body.dark-mode .summary-card-label,
+body.dark-mode .summary-info p,
+body.dark-mode .summary-card-sub,
+body.dark-mode .progress-info .total,
+body.dark-mode .percentage,
+body.dark-mode .pace-item,
+body.dark-mode .transaction-table th  { color: #7a83a0 !important; }
+
+body.dark-mode .transaction-description,
+body.dark-mode .description-cell,
+body.dark-mode .transaction-table td  { color: #f0f2f8 !important; }
+
+body.dark-mode .section-card p,
+body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-badge) { color: #c8cfe0; }
