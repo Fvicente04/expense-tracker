@@ -20,22 +20,24 @@ app.get('/api', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-sequelize.authenticate()
-  .then(() => {
-    console.log('PostgreSQL connection established successfully');
-    return sequelize.sync({ alter: true });
-  })
-  .then(() => {
-    console.log('Database tables synchronized');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('Database: PostgreSQL');
-      console.log(`API: http://localhost:${PORT}/api`);
+if (process.env.NODE_ENV !== 'test') {
+  sequelize.authenticate()
+    .then(() => {
+      console.log('PostgreSQL connection established successfully');
+      return sequelize.sync({ alter: true });
+    })
+    .then(() => {
+      console.log('Database tables synchronized');
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log('Database: PostgreSQL');
+        console.log(`API: http://localhost:${PORT}/api`);
+      });
+    })
+    .catch((error) => {
+      console.error('Unable to connect to the database:', error);
     });
-  })
-  .catch((error) => {
-    console.error('Unable to connect to the database:', error);
-  });
+}
 
 module.exports = app;
