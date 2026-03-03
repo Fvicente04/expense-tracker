@@ -5,18 +5,26 @@
       <div class="header-left">
         <h1 class="page-title">Transactions</h1>
       </div>
-      <button class="btn-primary" (click)="openModal()">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        </svg>
-        Add Transaction
-      </button>
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="exportCSV()" [disabled]="filtered.length === 0"
+          title="Export filtered transactions to CSV">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M10 3v10M6 9l4 4 4-4M3 17h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          Export CSV
+        </button>
+        <button class="btn-primary" (click)="openModal()">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          Add Transaction
+        </button>
+      </div>
     </div>
   </div>
 
-
   <div class="page-content">
-
 
     <div class="filters-card">
       <div class="filters-top">
@@ -56,13 +64,12 @@
 
       <div class="future-toggle" (click)="showFuture = !showFuture; applyFilters()">
         <label class="toggle-switch" (click)="$event.stopPropagation()">
-          <input type="checkbox" [checked]="showFuture" (change)="showFuture = !showFuture; applyFilters()"/>
+          <input type="checkbox" [checked]="showFuture" (change)="showFuture = !showFuture; applyFilters()" />
           <span class="toggle-slider"></span>
         </label>
         <span class="future-toggle-label">Show future recurring transactions</span>
       </div>
     </div>
-
 
     <div class="summary-section">
       <div class="summary-item income">
@@ -90,13 +97,13 @@
       </div>
     </div>
 
-
     <div class="section-card">
 
       <div class="bulk-bar" *ngIf="selected.size > 0">
         <span class="bulk-count">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M13.3334 4L6.00008 11.3333L2.66675 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.3334 4L6.00008 11.3333L2.66675 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
           </svg>
           {{ selected.size }} selected
         </span>
@@ -104,7 +111,9 @@
           <button class="bulk-clear-btn" (click)="clearSelection()">Clear selection</button>
           <button class="bulk-delete-btn" (click)="deleteSelected()" [disabled]="bulkDeleting">
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z"
+                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             {{ bulkDeleting ? 'Deleting...' : 'Delete ' + selected.size }}
           </button>
@@ -118,14 +127,14 @@
 
       <div *ngIf="!isLoading && filtered.length === 0" class="empty-state">
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <path d="M32 8V56M16 16H48M16 48H48" stroke="#e8ecf1" stroke-width="4" stroke-linecap="round"/>
-          <circle cx="32" cy="32" r="28" stroke="#e8ecf1" stroke-width="4"/>
+          <path d="M32 8V56M16 16H48M16 48H48" stroke="#e8ecf1" stroke-width="4" stroke-linecap="round" />
+          <circle cx="32" cy="32" r="28" stroke="#e8ecf1" stroke-width="4" />
         </svg>
         <h3>No transactions found</h3>
         <p>Add your first transaction to get started</p>
         <button class="btn-primary" (click)="openModal()">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
           Add Transaction
         </button>
@@ -135,9 +144,8 @@
         <thead>
           <tr>
             <th class="col-checkbox">
-              <input type="checkbox" class="row-checkbox"
-                [checked]="allSelected" [indeterminate]="someSelected"
-                (change)="toggleAll($event)" title="Select all"/>
+              <input type="checkbox" class="row-checkbox" [checked]="allSelected" [indeterminate]="someSelected"
+                (change)="toggleAll($event)" title="Select all" />
             </th>
             <th>Date</th>
             <th>Category</th>
@@ -149,9 +157,8 @@
         <tbody>
           <tr *ngFor="let transaction of filtered" [class.row-selected]="selected.has(transaction.id)">
             <td class="col-checkbox">
-              <input type="checkbox" class="row-checkbox"
-                [checked]="selected.has(transaction.id)"
-                (change)="toggleOne(transaction.id)"/>
+              <input type="checkbox" class="row-checkbox" [checked]="selected.has(transaction.id)"
+                (change)="toggleOne(transaction.id)" />
             </td>
             <td data-label="Date">
               {{ fmtDate(transaction.date) }}
@@ -167,19 +174,24 @@
             </td>
             <td data-label="Description">{{ transaction.description }}</td>
             <td data-label="Amount">
-              <span class="amount-cell" [class.income]="transaction.type === 'income'" [class.expense]="transaction.type === 'expense'">
+              <span class="amount-cell" [class.income]="transaction.type === 'income'"
+                [class.expense]="transaction.type === 'expense'">
                 {{ transaction.type === 'income' ? '+' : '–' }}€{{ fmt(transaction.amount) }}
               </span>
             </td>
             <td data-label="Actions" class="actions-cell">
               <button class="action-btn edit" (click)="editTransaction(transaction)" title="Edit">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                  <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
               <button class="action-btn delete" (click)="deleteTransaction(transaction.id)" title="Delete">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
             </td>
@@ -189,14 +201,13 @@
     </div>
   </div>
 
-
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">{{ editMode ? 'Edit Transaction' : 'Add Transaction' }}</h2>
         <button class="close-btn" (click)="closeModal()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
         </button>
       </div>
@@ -206,50 +217,52 @@
 
           <div *ngIf="errorMessage" class="error-banner">
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path
+                d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
             <span>{{ errorMessage }}</span>
           </div>
 
-
           <div class="form-group">
             <label>Type</label>
             <div class="type-toggle">
-              <button type="button" class="type-option"
-                [class.active]="form.get('type')?.value === 'income'"
+              <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'income'"
                 (click)="form.patchValue({type: 'income', categoryId: ''})">
                 <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
                 </svg>
                 Income
               </button>
-              <button type="button" class="type-option"
-                [class.active]="form.get('type')?.value === 'expense'"
+              <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'expense'"
                 (click)="form.patchValue({type: 'expense', categoryId: ''})">
                 <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
                 Expense
               </button>
             </div>
           </div>
 
-
           <div class="form-row">
             <div class="form-group">
               <label for="amount">Amount (€)</label>
               <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00"
-                [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid"/>
-              <span class="error-message" *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is required</span>
+                [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid" />
+              <span class="error-message"
+                *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is
+                required</span>
             </div>
             <div class="form-group">
               <label for="date">Date</label>
               <input type="date" id="date" formControlName="date"
-                [class.error]="form.get('date')?.touched && form.get('date')?.invalid"/>
-              <span class="error-message" *ngIf="form.get('date')?.touched && form.get('date')?.errors?.['required']">Date is required</span>
+                [class.error]="form.get('date')?.touched && form.get('date')?.invalid" />
+              <span class="error-message"
+                *ngIf="form.get('date')?.touched && form.get('date')?.errors?.['required']">Date is required</span>
             </div>
           </div>
-
 
           <div class="form-group">
             <label for="categoryId">Category</label>
@@ -260,19 +273,20 @@
                 {{ category.icon }} {{ category.name }}
               </option>
             </select>
-            <span class="error-message" *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is required</span>
+            <span class="error-message"
+              *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is
+              required</span>
           </div>
-
 
           <div class="form-group">
             <label for="description">Description</label>
-            <textarea id="description" formControlName="description" rows="2"
-              placeholder="Enter transaction details..."
+            <textarea id="description" formControlName="description" rows="2" placeholder="Enter transaction details..."
               [class.error]="form.get('description')?.touched && form.get('description')?.invalid">
             </textarea>
-            <span class="error-message" *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is required</span>
+            <span class="error-message"
+              *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is
+              required</span>
           </div>
-
 
           <div class="recurring-section" *ngIf="!editMode">
 
@@ -285,9 +299,7 @@
                 </div>
               </div>
               <label class="toggle-switch" (click)="$event.stopPropagation()">
-                <input type="checkbox"
-                  [checked]="form.get('isRecurring')?.value"
-                  (change)="toggleRecurring()"/>
+                <input type="checkbox" [checked]="form.get('isRecurring')?.value" (change)="toggleRecurring()" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -312,8 +324,7 @@
 
                 <div class="form-group">
                   <label>End date <span class="optional-tag">optional</span></label>
-                  <input type="date" formControlName="recurringEndDate"
-                    [min]="form.get('date')?.value"/>
+                  <input type="date" formControlName="recurringEndDate" [min]="form.get('date')?.value" />
                   <p class="field-hint">Leave empty to repeat indefinitely (max 60 occurrences)</p>
                 </div>
 
@@ -326,7 +337,6 @@
             </div>
 
           </div>
-
 
         </div>
 

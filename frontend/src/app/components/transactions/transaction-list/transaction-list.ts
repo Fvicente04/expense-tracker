@@ -41,15 +41,15 @@ export class TransactionListComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     this.form = this.fb.group({
-      type:               ['income', Validators.required],
-      amount:             ['', [Validators.required, Validators.min(0.01)]],
-      date:               [this.today(), Validators.required],
-      categoryId:         ['', Validators.required],
-      description:        ['', [Validators.required, Validators.minLength(3)]],
-      notes:              [''],
-      isRecurring:        [false],
+      type: ['income', Validators.required],
+      amount: ['', [Validators.required, Validators.min(0.01)]],
+      date: [this.today(), Validators.required],
+      categoryId: ['', Validators.required],
+      description: ['', [Validators.required, Validators.minLength(3)]],
+      notes: [''],
+      isRecurring: [false],
       recurringFrequency: ['monthly'],
-      recurringEndDate:   [null]
+      recurringEndDate: [null]
     });
   }
 
@@ -68,7 +68,7 @@ export class TransactionListComponent implements OnInit {
   loadCategories(): void {
     this.categoryService.getAll().subscribe({
       next: data => this.categories = data ?? [],
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -96,12 +96,12 @@ export class TransactionListComponent implements OnInit {
     this.selected.clear();
 
     this.filtered = this.transactions.filter(t => {
-      const typeMatch     = !this.filters.type       || t.type === this.filters.type;
+      const typeMatch = !this.filters.type || t.type === this.filters.type;
       const categoryMatch = !this.filters.categoryId || String(t.categoryId) === String(this.filters.categoryId);
-      const futureMatch   = this.showFuture || new Date(t.date) <= today;
+      const futureMatch = this.showFuture || new Date(t.date) <= today;
       let dateMatch = true;
       if (this.filters.startDate) dateMatch = dateMatch && new Date(t.date) >= new Date(this.filters.startDate);
-      if (this.filters.endDate)   dateMatch = dateMatch && new Date(t.date) <= new Date(this.filters.endDate);
+      if (this.filters.endDate) dateMatch = dateMatch && new Date(t.date) <= new Date(this.filters.endDate);
       return typeMatch && categoryMatch && dateMatch && futureMatch;
     });
   }
@@ -166,8 +166,8 @@ export class TransactionListComponent implements OnInit {
   }
 
   catColor(t: Transaction): string { return t.category?.color || '#6b7280'; }
-  catIcon(t: Transaction): string  { return t.category?.icon  || ''; }
-  catName(t: Transaction): string  { return t.category?.name  || 'Unknown'; }
+  catIcon(t: Transaction): string { return t.category?.icon || ''; }
+  catName(t: Transaction): string { return t.category?.name || 'Unknown'; }
 
   toggleRecurring(): void {
     const curr = this.form.get('isRecurring')?.value;
@@ -183,8 +183,8 @@ export class TransactionListComponent implements OnInit {
   }
 
   recurringPreview(): string {
-    const freq  = this.form.get('recurringFrequency')?.value;
-    const end   = this.form.get('recurringEndDate')?.value;
+    const freq = this.form.get('recurringFrequency')?.value;
+    const end = this.form.get('recurringEndDate')?.value;
     const start = this.form.get('date')?.value;
     if (!freq || !start) return '';
 
@@ -195,9 +195,9 @@ export class TransactionListComponent implements OnInit {
       const curr = new Date(start);
       let count = 0;
       while (count < 60) {
-        if (freq === 'weekly')       curr.setDate(curr.getDate() + 7);
+        if (freq === 'weekly') curr.setDate(curr.getDate() + 7);
         else if (freq === 'monthly') curr.setMonth(curr.getMonth() + 1);
-        else                         curr.setFullYear(curr.getFullYear() + 1);
+        else curr.setFullYear(curr.getFullYear() + 1);
         if (curr > endDate) break;
         count++;
       }
@@ -235,15 +235,15 @@ export class TransactionListComponent implements OnInit {
     this.editingId = t.id;
     this.errorMessage = '';
     this.form.patchValue({
-      type:               t.type,
-      amount:             t.amount,
-      date:               String(t.date).slice(0, 10),
-      categoryId:         t.categoryId,
-      description:        t.description,
-      notes:              (t as any).notes ?? '',
-      isRecurring:        (t as any).isRecurring ?? false,
+      type: t.type,
+      amount: t.amount,
+      date: String(t.date).slice(0, 10),
+      categoryId: t.categoryId,
+      description: t.description,
+      notes: (t as any).notes ?? '',
+      isRecurring: (t as any).isRecurring ?? false,
       recurringFrequency: (t as any).recurringFrequency ?? 'monthly',
-      recurringEndDate:   (t as any).recurringEndDate ?? null
+      recurringEndDate: (t as any).recurringEndDate ?? null
     });
     if (!this.form.get('categoryId')?.value) this.setDefaultCategory(t.type as any);
   }
@@ -259,15 +259,15 @@ export class TransactionListComponent implements OnInit {
     const raw = this.form.value;
 
     const payload: any = {
-      type:               raw.type,
-      amount:             Number(raw.amount),
-      date:               String(raw.date).slice(0, 10),
-      categoryId:         raw.categoryId,
-      description:        raw.description,
-      notes:              raw.notes || null,
-      isRecurring:        raw.isRecurring,
+      type: raw.type,
+      amount: Number(raw.amount),
+      date: String(raw.date).slice(0, 10),
+      categoryId: raw.categoryId,
+      description: raw.description,
+      notes: raw.notes || null,
+      isRecurring: raw.isRecurring,
       recurringFrequency: raw.isRecurring ? raw.recurringFrequency : null,
-      recurringEndDate:   raw.isRecurring && raw.recurringEndDate ? raw.recurringEndDate : null
+      recurringEndDate: raw.isRecurring && raw.recurringEndDate ? raw.recurringEndDate : null
     };
 
     const op = this.editMode
@@ -281,6 +281,27 @@ export class TransactionListComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  exportCSV(): void {
+    const headers = ['Date', 'Type', 'Category', 'Description', 'Amount', 'Notes'];
+    const rows = this.filtered.map(t => [
+      this.fmtDate(t.date),
+      t.type,
+      this.catName(t),
+      `"${(t.description || '').replace(/"/g, '""')}"`,
+      (t.type === 'expense' ? '-' : '') + Number(t.amount).toFixed(2),
+      `"${((t as any).notes || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   deleteTransaction(id: string): void {
