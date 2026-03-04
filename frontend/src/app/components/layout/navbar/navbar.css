@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   height: 100vh;
-  width: 72px;
+  width: 85px;
   background: #1e2139;
   display: flex;
   flex-direction: column;
@@ -26,14 +26,14 @@
   min-height: 72px;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
+.logo-icon img{
+  width: 52px; height: 52px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px;
+  width:80px;
+  height:80px;
+  object-fit:contain;
 }
-
-.logo svg { flex-shrink: 0; }
 
 .logo-text {
   color: white;

@@ -88,25 +88,29 @@ body.dark-mode :host {
 }
 
 .btn-print {
-  padding: 10px 22px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1.5px solid var(--c-border);
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+  box-shadow: 0 1px 3px rgba(30,33,57,0.05);
 }
 
-.btn-secondary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
-.btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-print:hover:not(:disabled) {
+  border-color: #667eea;
+  color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102,126,234,0.15);
+}
 
+.btn-print:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .page-content {
   max-width: 1400px;
@@ -946,7 +950,10 @@ body.dark-mode .sim-delta.negative { background: rgba(255,92,106,0.12); color: #
     background: white !important;
   }
 
-  /* Esconde elementos não relevantes */
+  app-sidebar,
+  app-header,
+  nav,
+  .sidebar,
   .filter-card,
   .header-actions,
   .simulator-panel,
@@ -991,9 +998,15 @@ body.dark-mode .sim-delta.negative { background: rgba(255,92,106,0.12); color: #
     border-radius: 10px !important;
     min-height: unset !important;
     background: white !important;
+    overflow: visible !important;
   }
 
-  .summary-value { font-size: 18px !important; }
+  .summary-value {
+    font-size: 16px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
 
   /* Gráficos lado a lado */
   .charts-section {
@@ -1013,6 +1026,7 @@ body.dark-mode .sim-delta.negative { background: rgba(255,92,106,0.12); color: #
 
   /* Top categories */
   .top-categories-card {
+    page-break-before: always;
     page-break-inside: avoid;
     border: 1px solid #e8ecf1 !important;
     border-radius: 10px !important;

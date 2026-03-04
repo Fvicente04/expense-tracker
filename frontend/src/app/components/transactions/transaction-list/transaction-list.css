@@ -442,7 +442,9 @@ body.dark-mode .row-selected { background: rgba(102,126,234,0.07) !important; }
 .action-btn.edit:hover   { background: #667eea; color: white; transform: scale(1.05); }
 .action-btn.delete:hover { background: var(--c-red); color: white; transform: scale(1.05); }
 
-.btn-primary {
+/* ── BUTTONS ── */
+.btn-primary,
+.btn-secondary {
   padding: 10px 22px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -459,9 +461,16 @@ body.dark-mode .row-selected { background: rgba(102,126,234,0.07) !important; }
   box-shadow: 0 2px 8px rgba(102,126,234,0.3);
 }
 
-.btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+}
 
+.btn-primary:disabled,
+.btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── MODAL ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -554,6 +563,7 @@ body.dark-mode .modal-overlay { background: rgba(0,0,0,0.72); }
   background: var(--c-surface2);
 }
 
+/* ── TYPE TOGGLE ── */
 .type-toggle {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -585,6 +595,7 @@ body.dark-mode .modal-overlay { background: rgba(0,0,0,0.72); }
 .type-option.active { background: var(--c-surface); color: #667eea; box-shadow: 0 2px 6px rgba(30,33,57,0.08); }
 body.dark-mode .type-option.active { background: #242840; color: #a5b4fc; box-shadow: none; }
 
+/* ── RECURRING ── */
 .recurring-section { width: 100%; box-sizing: border-box; }
 
 .recurring-toggle-row {
@@ -733,7 +744,7 @@ body.dark-mode .freq-btn:hover,
 body.dark-mode .freq-btn.active { border-color: #667eea; color: #a5b4fc; background: rgba(102,126,234,0.15); }
 body.dark-mode .recurring-preview { background: rgba(102,126,234,0.1); border-color: rgba(102,126,234,0.25); color: #a5b4fc; }
 
-@keyframes fadeIn    { from { opacity: 0; }                             to { opacity: 1; } }
+@keyframes fadeIn    { from { opacity: 0; }                              to { opacity: 1; } }
 @keyframes slideUp   { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin      { to { transform: rotate(360deg); } }
@@ -748,8 +759,8 @@ body.dark-mode .recurring-preview { background: rgba(102,126,234,0.1); border-co
   .page-content   { padding: 16px; --rhythm: 16px; }
   .header-content { flex-direction: column; align-items: flex-start; gap: 14px; }
   .header-actions { width: 100%; }
-  .btn-primary    { width: 100%; }
-  .btn-secondary  { flex: 1; justify-content: center; }
+  .btn-primary,
+  .btn-secondary  { width: 100%; justify-content: center; }
   .filters-grid   { grid-template-columns: 1fr 1fr; }
   .summary-section { grid-template-columns: 1fr; }
 
