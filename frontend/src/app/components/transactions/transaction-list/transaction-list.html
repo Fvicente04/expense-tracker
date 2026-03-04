@@ -6,14 +6,6 @@
         <h1 class="page-title">Transactions</h1>
       </div>
       <div class="header-actions">
-        <button class="btn-secondary" (click)="exportCSV()" [disabled]="filtered.length === 0"
-          title="Export filtered transactions to CSV">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-            <path d="M10 3v10M6 9l4 4 4-4M3 17h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-          Export CSV
-        </button>
         <button class="btn-primary" (click)="openModal()">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -252,8 +244,7 @@
               <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00"
                 [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid" />
               <span class="error-message"
-                *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is
-                required</span>
+                *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is required</span>
             </div>
             <div class="form-group">
               <label for="date">Date</label>
@@ -274,8 +265,7 @@
               </option>
             </select>
             <span class="error-message"
-              *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is
-              required</span>
+              *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is required</span>
           </div>
 
           <div class="form-group">
@@ -284,8 +274,7 @@
               [class.error]="form.get('description')?.touched && form.get('description')?.invalid">
             </textarea>
             <span class="error-message"
-              *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is
-              required</span>
+              *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is required</span>
           </div>
 
           <div class="recurring-section" *ngIf="!editMode">

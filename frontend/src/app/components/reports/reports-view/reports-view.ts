@@ -461,6 +461,9 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     try { this.trendChart = new Chart(ctx, config); } catch {}
   }
 
+  printReport(): void {
+  window.print();
+}
   getBalanceClass(): string { return this.summary.balance >= 0 ? 'positive' : 'negative'; }
 
   getTopCategories(): CategoryReport[] {

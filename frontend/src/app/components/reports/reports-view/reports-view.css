@@ -73,6 +73,12 @@ body.dark-mode :host {
 
 .header-left { flex: 1; }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .page-title {
   font-size: 26px;
   font-weight: 700;
@@ -80,6 +86,26 @@ body.dark-mode :host {
   margin: 0 0 4px 0;
   letter-spacing: -0.3px;
 }
+
+.btn-print {
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+}
+
+.btn-secondary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
+.btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 
 .page-content {
@@ -885,6 +911,8 @@ body.dark-mode .sim-delta.negative { background: rgba(255,92,106,0.12); color: #
   .page-header  { padding: 20px 16px; }
   .page-content { padding: 16px; --rhythm: 16px; }
   .header-content { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .header-actions { width: 100%; }
+  .btn-print { width: 100%; justify-content: center; }
   .filter-row   { grid-template-columns: 1fr; }
   .summary-cards { grid-template-columns: 1fr 1fr; }
   .category-delta { display: none; }
@@ -899,4 +927,116 @@ body.dark-mode .sim-delta.negative { background: rgba(255,92,106,0.12); color: #
 @media (max-width: 480px) {
   .summary-cards { grid-template-columns: 1fr; }
   .summary-value { font-size: 20px; }
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  @page {
+    margin: 20mm 15mm;
+    size: A4 portrait;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+  }
+
+  body, :host {
+    background: white !important;
+  }
+
+  /* Esconde elementos não relevantes */
+  .filter-card,
+  .header-actions,
+  .simulator-panel,
+  .whatif-btn,
+  .forecast-note { display: none !important; }
+
+  .page-header {
+    border-bottom: 2px solid #e8ecf1 !important;
+    padding: 0 0 16px 0 !important;
+    margin-bottom: 20px;
+    background: white !important;
+  }
+
+  .page-title {
+    font-size: 20px !important;
+    color: #1e2139 !important;
+  }
+
+  .page-content {
+    padding: 0 !important;
+    background: white !important;
+    gap: 16px !important;
+  }
+
+  /* Insights */
+  .insights-card {
+    background: #1e2139 !important;
+    border-radius: 10px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 4px;
+  }
+
+  /* Summary 4 colunas */
+  .summary-cards {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .summary-card {
+    border: 1px solid #e8ecf1 !important;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+    min-height: unset !important;
+    background: white !important;
+  }
+
+  .summary-value { font-size: 18px !important; }
+
+  /* Gráficos lado a lado */
+  .charts-section {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    page-break-inside: avoid;
+  }
+
+  .chart-card {
+    border: 1px solid #e8ecf1 !important;
+    border-radius: 10px !important;
+    padding: 14px !important;
+    background: white !important;
+  }
+
+  .chart-container { height: 180px !important; }
+
+  /* Top categories */
+  .top-categories-card {
+    page-break-inside: avoid;
+    border: 1px solid #e8ecf1 !important;
+    border-radius: 10px !important;
+    padding: 14px !important;
+    background: white !important;
+  }
+
+  .category-delta { display: none !important; }
+
+  /* Forecast */
+  .forecast-card {
+    border: 1px solid #e8ecf1 !important;
+    border-radius: 10px !important;
+    padding: 14px !important;
+    background: white !important;
+  }
+
+  .forecast-header-right { display: none !important; }
+
+  .forecast-table th,
+  .forecast-table td {
+    font-size: 11px !important;
+    padding: 7px 10px !important;
+  }
+
+  .row-past { opacity: 1 !important; }
 }
