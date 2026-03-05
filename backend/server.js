@@ -6,44 +6,71 @@ const { sequelize } = require('./models');
 const app = express();
 
 /**
- * CORS
- * - Em produção, libere apenas o domínio do frontend (CLIENT_URL)
- * - Em dev, libere localhost:4200
+ * Normaliza URL:
+ * - remove barra final
+ * - garante string válida
  */
-const allowedOrigins = [
-  process.env.CLIENT_URL,          // ex: https://expense-tracker-production-f359.up.railway.app
-  'http://localhost:4200'
-].filter(Boolean);
+function normalizeUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\/+$/, '');
+}
 
-const corsOptions = {
-  origin: (origin, cb) => {
-    // Permite requests sem origin (health checks, curl, Postman, etc.)
-    if (!origin) return cb(null, true);
+/**
+ * Lista de origens permitidas:
+ * - CLIENT_URL do Railway
+ * - localhost dev
+ * - qualquer subdomínio do Railway (pra não quebrar quando mudar deploy)
+ * - (opcional) seu domínio custom quando comprar
+ */
+const allowedOrigins = new Set(
+  [
+    normalizeUrl(process.env.CLIENT_URL),
+    'http://localhost:4200',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    // adicione aqui quando tiver domínio:
+    // 'https://budgetflowapp.com',
+  ].filter(Boolean)
+);
 
-    if (allowedOrigins.includes(origin)) return cb(null, true);
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // Postman/cURL/Server-to-server (sem Origin)
+  const o = normalizeUrl(origin);
 
-    return cb(new Error(`CORS blocked for origin: ${origin}`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+  // Permite os que estão na lista
+  if (allowedOrigins.has(o)) return true;
 
-app.use(cors(corsOptions));
+  // Permite qualquer deploy do Railway
+  // Ex: https://abundant-joy-production-6422.up.railway.app
+  if (/^https:\/\/.*\.up\.railway\.app$/i.test(o)) return true;
 
-// Responder preflight (OPTIONS) para todas as rotas
-app.options('*', cors(corsOptions));
+  return false;
+}
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (isAllowedOrigin(origin)) return cb(null, true);
+      return cb(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// garante preflight em todas as rotas
+app.options('*', cors());
 
 app.use(express.json());
 
-// Routes
+// Rotas
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/reports', require('./routes/reports'));
 
-// Health / Root
 app.get('/api', (req, res) => {
   res.json({ message: 'BudgetFlow API is running' });
 });
@@ -52,7 +79,6 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
-// Port (Railway fornece PORT)
 const PORT = Number(process.env.PORT) || 5000;
 
 async function start() {
@@ -65,12 +91,11 @@ async function start() {
       console.log('Database tables synchronized');
     }
 
-    // IMPORTANTE: 0.0.0.0 para aceitar conexões externas no Railway
+    // Railway precisa 0.0.0.0
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('Database: PostgreSQL');
-      console.log('API: /api');
+      console.log(`CLIENT_URL: ${process.env.CLIENT_URL || '(not set)'}`);
     });
   } catch (error) {
     console.error('Unable to start server:', error);
