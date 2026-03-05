@@ -183,23 +183,31 @@ body.dark-mode :host {
 }
 
 .filter-group input[type="date"] {
-  padding: 9px 14px;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 44px;
+  line-height: 44px;
+  padding: 0 14px;
+  text-align: left;
+
   border: 1.5px solid var(--c-border);
   border-radius: var(--radius-sm);
   font-size: 14px;
   color: var(--c-text);
   background: var(--c-surface2);
   font-family: inherit;
-  height: 40px;
-  width: 100%;
   transition: all 0.2s;
 }
 
-.filter-group input[type="date"]:focus {
-  outline: none;
-  border-color: #667eea;
-  background: var(--c-surface);
-  box-shadow: 0 0 0 3px rgba(102,126,234,0.08);
+.filter-group input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  line-height: 44px;
+}
+
+.filter-group input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+  line-height: 44px;
 }
 
 .insights-card {

@@ -415,7 +415,6 @@ body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-b
   align-items: end;
 }
 
-
 .form-grid .span-2 {
   grid-column: 1 / -1;
 }
@@ -427,13 +426,11 @@ body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-b
   gap: 12px;
 }
 
-
 @media (min-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
-
 
 .form-grid input,
 .form-grid select,
@@ -441,7 +438,6 @@ body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-b
   width: 100%;
   min-width: 0;
 }
-
 
 .form-actions {
   display: flex;
@@ -451,4 +447,27 @@ body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-b
 
 .form-actions button {
   white-space: nowrap;
+}
+
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+  min-height: 44px;         
+  line-height: 44px;        
+  padding: 0 14px;          
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  line-height: 44px;
+}
+
+input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+  line-height: 44px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.65;
 }
