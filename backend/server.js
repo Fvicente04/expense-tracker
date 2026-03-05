@@ -5,8 +5,22 @@ const { sequelize } = require('./models');
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  process.env.CLIENT_URL,          
+  'http://localhost:4200',         
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
+
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/categories', require('./routes/categories'));
@@ -15,29 +29,39 @@ app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/reports', require('./routes/reports'));
 
 app.get('/api', (req, res) => {
-  res.json({ message: 'Expense Tracker API is running' });
+  res.json({ message: 'BudgetFlow API is running' });
 });
 
-const PORT = process.env.PORT || 5000;
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true });
+});
 
-if (process.env.NODE_ENV !== 'test') {
-  sequelize.authenticate()
-    .then(() => {
+
+const PORT = Number(process.env.PORT) || 5000;
+
+async function start() {
+  try {
+    if (process.env.NODE_ENV !== 'test') {
+      await sequelize.authenticate();
       console.log('PostgreSQL connection established successfully');
-      return sequelize.sync({ alter: true });
-    })
-    .then(() => {
+
+      await sequelize.sync({ alter: true });
       console.log('Database tables synchronized');
-      app.listen(PORT, '127.0.0.1', () => {
-        console.log(`Server running on port ${PORT}`);
-        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log('Database: PostgreSQL');
-        console.log(`API: http://localhost:${PORT}/api`);
-      });
-    })
-    .catch((error) => {
-      console.error('Unable to connect to the database:', error);
+    }
+
+   
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log('Database: PostgreSQL');
+      console.log(`API: /api`);
     });
+  } catch (error) {
+    console.error('Unable to start server:', error);
+    process.exit(1);
+  }
 }
+
+start();
 
 module.exports = app;
