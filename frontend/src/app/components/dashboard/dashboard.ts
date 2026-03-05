@@ -154,21 +154,42 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.subs.push(
-      this.reportService.getSummary(start, end).subscribe({
+      this.transactionService.getAll().subscribe({
         next: (data: any) => {
-          this.totalIncome  = Number(data.totalIncome  || 0);
-          this.totalExpense = Number(data.totalExpense || 0);
+          const all: Transaction[] = Array.isArray(data) ? data : (data.transactions || data.data || []);
+
+          const visible = all.filter((t: Transaction) => {
+            const d = new Date(t.date);
+            return d <= today;
+          });
+
+          this.totalIncome = visible
+            .filter((t: Transaction) => t.type === 'income')
+            .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
+
+          this.totalExpense = visible
+            .filter((t: Transaction) => t.type === 'expense')
+            .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
+
           this.balance = this.totalIncome - this.totalExpense;
-          this.transactionCount = Number(data.transactionCount || 0);
-          this.subs.push(
-            this.reportService.getSummary(prevStart, prevEnd).subscribe({
-              next: (prev: any) => {
-                this.incomeVsLastMonth  = this.totalIncome  - Number(prev.totalIncome  || 0);
-                this.expenseVsLastMonth = this.totalExpense - Number(prev.totalExpense || 0);
-              },
-              error: () => {}
-            })
-          );
+          this.transactionCount = visible.length;
+
+          const prevVisible = visible.filter((t: Transaction) => {
+            const d = new Date(t.date).toISOString().split('T')[0];
+            return d >= prevStart && d <= prevEnd;
+          });
+
+          const prevIncome = prevVisible
+            .filter((t: Transaction) => t.type === 'income')
+            .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
+
+          const prevExpense = prevVisible
+            .filter((t: Transaction) => t.type === 'expense')
+            .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
+
+          this.incomeVsLastMonth = this.totalIncome - prevIncome;
+          this.expenseVsLastMonth = this.totalExpense - prevExpense;
+
           done();
         },
         error: () => done()
@@ -299,11 +320,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx: any) => `\u20AC${Number(ctx.raw).toFixed(2)}` } }
+          tooltip: { callbacks: { label: (ctx: any) => `€${Number(ctx.raw).toFixed(2)}` } }
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: labelColor, font: { size: 11 } } },
-          y: { grid: { color: gridColor }, ticks: { color: labelColor, font: { size: 11 }, callback: (v: any) => `\u20AC${v}` }, beginAtZero: true }
+          y: { grid: { color: gridColor }, ticks: { color: labelColor, font: { size: 11 }, callback: (v: any) => `€${v}` }, beginAtZero: true }
         }
       }
     });
@@ -322,7 +343,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   fmtDelta(value: number): string {
-    return `${value >= 0 ? '+' : '\u2013'}\u20AC${Math.abs(value).toFixed(0)}`;
+    return `${value >= 0 ? '+' : '–'}€${Math.abs(value).toFixed(0)}`;
   }
 
   goTo(path: string, queryParams?: Record<string, any>): void {
