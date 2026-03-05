@@ -238,7 +238,7 @@
               <label>Type</label>
               <div class="type-toggle">
                 <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'income'"
-                  (click)="form.patchValue({type: 'income', categoryId: ''})">
+                  (click)="setType('income')">
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                       stroke-linejoin="round" />
@@ -247,7 +247,7 @@
                 </button>
 
                 <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'expense'"
-                  (click)="form.patchValue({type: 'expense', categoryId: ''})">
+                  (click)="setType('expense')">
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                     <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2"
                       stroke-linecap="round" stroke-linejoin="round" />
@@ -294,7 +294,7 @@
                 *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is required</span>
             </div>
 
-            <div class="recurring-section span-2" *ngIf="!editMode">
+            <div class="recurring-section span-2">
 
               <div class="recurring-toggle-row" (click)="toggleRecurring()">
                 <div class="recurring-toggle-info">

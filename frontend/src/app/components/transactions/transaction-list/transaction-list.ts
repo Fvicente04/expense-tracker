@@ -165,6 +165,17 @@ export class TransactionListComponent implements OnInit {
     this.form.patchValue({ categoryId: first?.id ?? '' });
   }
 
+  setType(type: 'income' | 'expense'): void {
+    const currentCategoryId = this.form.get('categoryId')?.value;
+    const currentCategory = this.categories.find(c => String(c.id) === String(currentCategoryId));
+
+    this.form.patchValue({ type });
+
+    if (!currentCategory || currentCategory.type !== type) {
+      this.setDefaultCategory(type);
+    }
+  }
+
   catColor(t: Transaction): string { return t.category?.color || '#6b7280'; }
   catIcon(t: Transaction): string { return t.category?.icon || ''; }
   catName(t: Transaction): string { return t.category?.name || 'Unknown'; }
