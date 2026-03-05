@@ -407,3 +407,36 @@ body.dark-mode .transaction-table td  { color: #f0f2f8 !important; }
 
 body.dark-mode .section-card p,
 body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-badge) { color: #c8cfe0; }
+
+@media print {
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-header,
+  .overlay {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .summary-card {
+    overflow: visible !important;
+  }
+
+  .summary-value {
+    font-size: 14px !important;
+    overflow: visible !important;
+    white-space: nowrap !important;
+    text-overflow: unset !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
