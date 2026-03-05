@@ -355,28 +355,6 @@ body.dark-mode .delta-badge.delta-up   { background: rgba(255,92,106,0.12); colo
 body.dark-mode .delta-badge.delta-down { background: rgba(46,216,122,0.12); color: #2ed87a; }
 body.dark-mode .delta-badge.delta-same { background: rgba(255,255,255,0.06); color: #7a83a0; }
 
-@media (max-width: 768px) {
-  .header-content { flex-direction: column; align-items: flex-start; }
-  .btn-primary    { width: 100%; }
-  .page-title     { font-size: 24px; }
-  .page-subtitle  { font-size: 14px; }
-  .hide-mobile    { display: none !important; }
-}
-
-@media (max-width: 480px) {
-  .page-title { font-size: 20px !important; }
-  .page-subtitle { font-size: 13px; }
-  .btn-primary .btn-text,
-  .btn-secondary .btn-text { display: none; }
-  .btn-primary svg,
-  .btn-secondary svg { margin: 0 !important; }
-  .action-btn { width: 36px !important; height: 36px !important; }
-}
-
-@media (min-width: 769px) {
-  .hide-desktop { display: none !important; }
-}
-
 body.dark-mode .category-name,
 body.dark-mode .category-card h3,
 body.dark-mode .category-card h4,
@@ -408,35 +386,69 @@ body.dark-mode .transaction-table td  { color: #f0f2f8 !important; }
 body.dark-mode .section-card p,
 body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-badge) { color: #c8cfe0; }
 
-@media print {
-  .sidebar {
-    display: none !important;
+
+
+@media (max-width: 768px) {
+  .page-content,
+  .content-area,
+  .page-wrapper {
+    padding: 16px !important;
   }
 
-  .mobile-header,
-  .overlay {
-    display: none !important;
+  .page-header {
+    padding: 16px !important;
   }
 
-  .main-content {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    width: 100% !important;
+  .form-actions {
+    width: 100%;
   }
 
-  .summary-card {
-    overflow: visible !important;
+  .form-actions button {
+    width: auto;
   }
+}
 
-  .summary-value {
-    font-size: 14px !important;
-    overflow: visible !important;
-    white-space: nowrap !important;
-    text-overflow: unset !important;
-  }
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: end;
+}
 
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
+
+.form-grid .span-2 {
+  grid-column: 1 / -1;
+}
+
+.filters-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
   }
+}
+
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  width: 100%;
+  min-width: 0;
+}
+
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-actions button {
+  white-space: nowrap;
 }
