@@ -64,17 +64,17 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
   showSimulator = false;
   scenarios: Scenario[] = [];
-  newScenarioLabel    = '';
+  newScenarioLabel = '';
   newScenarioType: 'income' | 'expense' = 'income';
-  newScenarioAmount   = 0;
+  newScenarioAmount = 0;
 
   readonly QUICK_SCENARIOS: Omit<Scenario, 'id'>[] = [
-    { label: '+\u20AC200 savings/month',      type: 'income',  monthlyDelta:  200 },
-    { label: 'Salary raise +\u20AC500',       type: 'income',  monthlyDelta:  500 },
-    { label: 'Side hustle +\u20AC800',        type: 'income',  monthlyDelta:  800 },
+    { label: '+\u20AC200 savings/month',           type: 'income',  monthlyDelta:  200 },
+    { label: 'Salary raise +\u20AC500',            type: 'income',  monthlyDelta:  500 },
+    { label: 'Side hustle +\u20AC800',             type: 'income',  monthlyDelta:  800 },
     { label: 'Remove subscription \u2212\u20AC50', type: 'expense', monthlyDelta: -50  },
-    { label: 'Cut dining \u2212\u20AC150',    type: 'expense', monthlyDelta: -150 },
-    { label: 'Extra rent \u2212\u20AC300',    type: 'expense', monthlyDelta: -300 },
+    { label: 'Cut dining \u2212\u20AC150',         type: 'expense', monthlyDelta: -150 },
+    { label: 'Extra rent \u2212\u20AC300',         type: 'expense', monthlyDelta: -300 },
   ];
 
   constructor(
@@ -161,7 +161,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   }
 
   buildForecast(): void {
-    const today  = new Date();
+    const today = new Date();
     today.setHours(23, 59, 59, 999);
     const year  = this.forecastYear;
     const month = today.getMonth();
@@ -169,7 +169,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     const past      = this.allTransactions.filter(t => new Date(t.date) <= today);
     const recurring = this.allTransactions.filter(t => (t as any).isRecurring);
 
-    const avgExpenses = this.varMonthlyAvg(past, recurring, 'expense', 3);
+    const variableMedianExp    = this.buildVariableMedian(past, recurring, 'expense', 3);
+    const variableMedianIncome = this.buildVariableMedian(past, recurring, 'income',  3);
 
     const incDelta = this.scenarios.filter(s => s.type === 'income').reduce((sum, s) => sum + s.monthlyDelta, 0);
     const expDelta = this.scenarios.filter(s => s.type === 'expense').reduce((sum, s) => sum + Math.abs(s.monthlyDelta), 0);
@@ -198,20 +199,20 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
       } else if (isCurrent) {
         const actual        = this.actualMonthData(past, year, m);
-        const recInc        = this.recurringForMonth(recurring, year, m, 'income');
-        const recExp        = this.recurringForMonth(recurring, year, m, 'expense');
+        const recInc        = this.projectRecurringForMonth(recurring, year, m, 'income');
+        const recExp        = this.projectRecurringForMonth(recurring, year, m, 'expense');
         const alreadyRecInc = this.recurringBeforeToday(recurring, year, m, 'income',  today);
         const alreadyRecExp = this.recurringBeforeToday(recurring, year, m, 'expense', today);
-        const totalIncome   = actual.income   + (recInc - alreadyRecInc);
-        const totalExp      = actual.expenses + (recExp - alreadyRecExp);
+        const totalIncome   = actual.income   + Math.max(0, recInc - alreadyRecInc);
+        const totalExp      = actual.expenses + Math.max(0, recExp - alreadyRecExp);
         const bal           = totalIncome - totalExp;
         cum += bal;
 
-        const daysInMonth    = new Date(year, m + 1, 0).getDate();
-        const remaining      = Math.max(0, (daysInMonth - today.getDate()) / daysInMonth);
-        const simIncome      = totalIncome + (incDelta * remaining);
-        const simExp         = totalExp    + (expDelta * remaining);
-        const simBal         = simIncome - simExp;
+        const daysInMonth = new Date(year, m + 1, 0).getDate();
+        const remaining   = Math.max(0, (daysInMonth - today.getDate()) / daysInMonth);
+        const simIncome   = totalIncome + (incDelta * remaining);
+        const simExp      = totalExp    + (expDelta * remaining);
+        const simBal      = simIncome - simExp;
         simCum += simBal;
 
         months.push({
@@ -226,16 +227,16 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         });
 
       } else {
-        const recInc  = this.recurringForMonth(recurring, year, m, 'income');
-        const recExp  = this.recurringForMonth(recurring, year, m, 'expense');
-        const projInc = recInc;
-        const projExp = recExp + avgExpenses;
+        const recInc  = this.projectRecurringForMonth(recurring, year, m, 'income');
+        const recExp  = this.projectRecurringForMonth(recurring, year, m, 'expense');
+        const projInc = recInc + variableMedianIncome;
+        const projExp = recExp + variableMedianExp;
         const bal     = projInc - projExp;
         cum += bal;
 
         const simIncome = projInc + incDelta;
-        const simExp    = projExp + expDelta;
-        const simBal    = simIncome - simExp;
+        const simExp2   = projExp + expDelta;
+        const simBal    = simIncome - simExp2;
         simCum += simBal;
 
         months.push({
@@ -245,7 +246,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         });
         simMonths.push({
           label: names[m], year, month: m,
-          projectedIncome: simIncome, projectedExpenses: simExp,
+          projectedIncome: simIncome, projectedExpenses: simExp2,
           balance: simBal, cumulative: simCum, isCurrentMonth: false, isPast: false
         });
       }
@@ -253,6 +254,78 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
     this.forecastMonths  = months;
     this.simulatedMonths = simMonths;
+  }
+
+  private projectRecurringForMonth(transactions: Transaction[], year: number, month: number, type: 'income' | 'expense'): number {
+    return transactions
+      .filter(t => t.type === type && (t as any).isRecurring)
+      .reduce((sum, t) => {
+        const freq       = (t as any).recurringFrequency as 'weekly' | 'monthly' | 'yearly' | null;
+        const originDate = new Date(t.date);
+        const endDate    = (t as any).recurringEndDate ? new Date((t as any).recurringEndDate) : null;
+        const targetDate = new Date(year, month, 1);
+
+        if (endDate && targetDate > endDate) return sum;
+        if (targetDate < new Date(originDate.getFullYear(), originDate.getMonth(), 1)) return sum;
+
+        const amount = Number(t.amount);
+        if (freq === 'monthly') return sum + amount;
+        if (freq === 'weekly')  return sum + amount * 4.33;
+        if (freq === 'yearly')  return originDate.getMonth() === month ? sum + amount : sum;
+        return sum;
+      }, 0);
+  }
+
+  private buildVariableMedian(all: Transaction[], recurring: Transaction[], type: 'income' | 'expense', lookback: number): number {
+    const today        = new Date();
+    const recurringIds = new Set(recurring.map(t => (t as any).id));
+    const monthlyTotals: number[] = [];
+
+    for (let i = 1; i <= lookback; i++) {
+      const d  = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const yr = d.getFullYear();
+      const mo = d.getMonth();
+
+      const hasActivity = all.some(t => {
+        const td = new Date(t.date);
+        return t.type === 'income' && td.getFullYear() === yr && td.getMonth() === mo;
+      });
+      if (!hasActivity) continue;
+
+      const total = all
+        .filter(t => {
+          const td = new Date(t.date);
+          return t.type === type && td.getFullYear() === yr && td.getMonth() === mo && !recurringIds.has((t as any).id);
+        })
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      monthlyTotals.push(total);
+    }
+
+    if (monthlyTotals.length === 0) return 0;
+    const sorted = [...monthlyTotals].sort((a, b) => a - b);
+    const mid    = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+
+  private actualMonthData(transactions: Transaction[], year: number, month: number): { income: number; expenses: number } {
+    const t = transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
+    return {
+      income:   t.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0),
+      expenses: t.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+    };
+  }
+
+  private recurringBeforeToday(transactions: Transaction[], year: number, month: number, type: 'income' | 'expense', today: Date): number {
+    return transactions
+      .filter(t => {
+        const d = new Date(t.date);
+        return t.type === type && d.getFullYear() === year && d.getMonth() === month && d <= today;
+      })
+      .reduce((s, t) => s + Number(t.amount), 0);
   }
 
   get displayMonths(): ForecastMonth[] {
@@ -274,10 +347,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   get baseYearEnd(): ForecastMonth | null       { return this.forecastMonths.find(m => m.month === 11) ?? null; }
   get yearEndDelta(): number { return (this.simulatedYearEnd?.cumulative ?? 0) - (this.baseYearEnd?.cumulative ?? 0); }
 
-  toggleSimulator(): void {
-    this.showSimulator = !this.showSimulator;
-    this.resetNewForm();
-  }
+  toggleSimulator(): void { this.showSimulator = !this.showSimulator; this.resetNewForm(); }
 
   resetNewForm(): void {
     this.newScenarioLabel  = '';
@@ -318,57 +388,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     return this.scenarios.some(s => s.label === q.label);
   }
 
-  private varMonthlyAvg(all: Transaction[], recurring: Transaction[], type: 'income' | 'expense', months: number): number {
-    const today = new Date();
-    let total = 0, count = 0;
-    for (let i = 1; i <= months; i++) {
-      const d     = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const yr    = d.getFullYear();
-      const mo    = d.getMonth();
-      const hasIncome = all.some(t => {
-        const td = new Date(t.date);
-        return t.type === 'income' && td.getFullYear() === yr && td.getMonth() === mo;
-      });
-      if (!hasIncome) continue;
-      const actual = all
-        .filter(t => { const td = new Date(t.date); return t.type === type && td.getFullYear() === yr && td.getMonth() === mo; })
-        .reduce((s, t) => s + Number(t.amount), 0);
-      const rec = recurring
-        .filter(t => { const td = new Date(t.date); return t.type === type && td.getFullYear() === yr && td.getMonth() === mo; })
-        .reduce((s, t) => s + Number(t.amount), 0);
-      total += Math.max(0, actual - rec);
-      count++;
-    }
-    return count > 0 ? total / count : 0;
-  }
-
-  private actualMonthData(transactions: Transaction[], year: number, month: number): { income: number; expenses: number } {
-    const t = transactions.filter(t => {
-      const d = new Date(t.date);
-      return d.getFullYear() === year && d.getMonth() === month;
-    });
-    return {
-      income:   t.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0),
-      expenses: t.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-    };
-  }
-
-  private recurringForMonth(transactions: Transaction[], year: number, month: number, type: 'income' | 'expense'): number {
-    return transactions
-      .filter(t => { const d = new Date(t.date); return t.type === type && d.getFullYear() === year && d.getMonth() === month; })
-      .reduce((s, t) => s + Number(t.amount), 0);
-  }
-
-  private recurringBeforeToday(transactions: Transaction[], year: number, month: number, type: 'income' | 'expense', today: Date): number {
-    return transactions
-      .filter(t => { const d = new Date(t.date); return t.type === type && d.getFullYear() === year && d.getMonth() === month && d <= today; })
-      .reduce((s, t) => s + Number(t.amount), 0);
-  }
-
-  private decemberForecast(): ForecastMonth | null {
-    return this.forecastMonths.find(m => m.month === 11) ?? null;
-  }
-
   buildInsights(): void {
     this.quickInsights = [];
     if (this.previousSummary.totalExpense > 0) {
@@ -387,7 +406,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       if (rate > 0)      this.quickInsights.push({ type: 'down', text: `You saved <strong>${rate}%</strong> of your income this period` });
       else if (rate < 0) this.quickInsights.push({ type: 'up',   text: `Spent <strong>\u20AC${Math.abs(this.summary.balance).toFixed(0)}</strong> more than earned this period` });
     }
-    const dec = this.decemberForecast();
+    const dec = this.forecastMonths.find(m => m.month === 11) ?? null;
     if (dec) {
       if (dec.cumulative > 0) this.quickInsights.push({ type: 'down', text: `On track to end ${this.forecastYear} with <strong>\u20AC${dec.cumulative.toFixed(0)}</strong> accumulated balance` });
       else                    this.quickInsights.push({ type: 'up',   text: `Forecast shows a <strong>\u20AC${Math.abs(dec.cumulative).toFixed(0)}</strong> deficit by end of ${this.forecastYear}` });
@@ -461,9 +480,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     try { this.trendChart = new Chart(ctx, config); } catch {}
   }
 
-  printReport(): void {
-  window.print();
-}
+  printReport(): void { window.print(); }
+
   getBalanceClass(): string { return this.summary.balance >= 0 ? 'positive' : 'negative'; }
 
   getTopCategories(): CategoryReport[] {
