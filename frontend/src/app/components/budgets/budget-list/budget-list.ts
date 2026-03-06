@@ -12,10 +12,9 @@ interface Month { value: number; label: string; }
 
 @Component({
   selector: 'app-budget-list',
-  standalone: true,
   imports: [CommonModule, NavbarComponent, ReactiveFormsModule, FormsModule],
   templateUrl: './budget-list.html',
-  styleUrls: ['./budget-list.css']
+  styleUrl: './budget-list.css'
 })
 export class BudgetListComponent implements OnInit {
   budgets: Budget[] = [];

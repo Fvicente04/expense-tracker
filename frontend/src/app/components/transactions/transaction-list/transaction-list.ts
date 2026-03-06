@@ -10,11 +10,11 @@ import { Category } from '../../../models/category';
 
 @Component({
   selector: 'app-transaction-list',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, NavbarComponent],
   templateUrl: './transaction-list.html',
-  styleUrls: ['./transaction-list.css']
+  styleUrl: './transaction-list.css'
 })
+
 export class TransactionListComponent implements OnInit {
   transactions: Transaction[] = [];
   filtered: Transaction[] = [];

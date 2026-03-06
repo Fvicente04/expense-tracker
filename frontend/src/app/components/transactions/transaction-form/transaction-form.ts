@@ -9,10 +9,9 @@ import { NavbarComponent } from '../../layout/navbar/navbar';
 
 @Component({
   selector: 'app-transaction-form',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NavbarComponent],
   templateUrl: './transaction-form.html',
-  styleUrls: ['./transaction-form.css']
+  styleUrl: './transaction-form.css'
 })
 export class TransactionFormComponent implements OnInit {
   form!: FormGroup;

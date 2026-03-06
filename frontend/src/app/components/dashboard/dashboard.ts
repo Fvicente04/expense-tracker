@@ -15,12 +15,12 @@ Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
   encapsulation: ViewEncapsulation.None,
   imports: [CommonModule, RouterModule, NavbarComponent],
   templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.css']
+  styleUrl: './dashboard.css'
 })
+
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
   private viewInitialized = false;

@@ -12,10 +12,9 @@ function pwdMatch(group: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-register',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.html',
-  styleUrls: ['./register.css']
+  styleUrl: './register.css'
 })
 export class RegisterComponent {
   form: FormGroup;

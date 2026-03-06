@@ -9,11 +9,11 @@ import { NavbarComponent } from '../../layout/navbar/navbar';
 
 @Component({
   selector: 'app-budget-form',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NavbarComponent],
   templateUrl: './budget-form.html',
-  styleUrls: ['./budget-form.css']
+  styleUrl: './budget-form.css'
 })
+
 export class BudgetFormComponent implements OnInit {
   form!: FormGroup;
   isLoading = false;

@@ -7,10 +7,9 @@ import { NavbarComponent } from '../../layout/navbar/navbar';
 
 @Component({
   selector: 'app-category-form',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, NavbarComponent],
   templateUrl: './category-form.html',
-  styleUrls: ['./category-form.css']
+  styleUrl: './category-form.css'
 })
 export class CategoryFormComponent implements OnInit {
   categoryForm!: FormGroup;

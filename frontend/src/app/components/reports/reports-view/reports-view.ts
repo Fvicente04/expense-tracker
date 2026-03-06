@@ -35,11 +35,11 @@ export interface Scenario {
 
 @Component({
   selector: 'app-reports-view',
-  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule, NavbarComponent],
   templateUrl: './reports-view.html',
-  styleUrls: ['./reports-view.css']
+  styleUrl: './reports-view.css'
 })
+
 export class ReportsViewComponent implements OnInit, AfterViewInit {
   filterForm!: FormGroup;
   isLoading = false;

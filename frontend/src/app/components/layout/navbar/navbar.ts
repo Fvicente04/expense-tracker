@@ -8,10 +8,9 @@ import { ThemeService } from '../../../services/theme';
 
 @Component({
   selector: 'app-navbar',
-  standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './navbar.html',
-  styleUrls: ['./navbar.css']
+  styleUrl: './navbar.css'
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   isExpanded = false;

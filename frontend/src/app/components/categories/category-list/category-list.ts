@@ -10,11 +10,11 @@ const E = '\uFE0F';
 
 @Component({
   selector: 'app-category-list',
-  standalone: true,
   imports: [CommonModule, NavbarComponent, ReactiveFormsModule, FormsModule],
   templateUrl: './category-list.html',
-  styleUrls: ['./category-list.css']
+  styleUrl: './category-list.css'
 })
+
 export class CategoryListComponent implements OnInit {
   categories: Category[] = [];
   isLoading = false;
