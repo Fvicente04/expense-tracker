@@ -167,7 +167,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
     const past = this.allTransactions.filter(t => new Date(t.date) <= today);
 
-    // Deduplicate recurring transactions by recurringGroupId, keeping the earliest instance
     const allRecurring = this.allTransactions.filter(t => (t as any).isRecurring || (t as any).is_recurring);
     const recurringMap = new Map<string, Transaction>();
     allRecurring.forEach(t => {
@@ -178,8 +177,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       }
     });
     const recurring = Array.from(recurringMap.values());
-
-    const variableMedianExp = this.buildVariableMedian(past, recurring, 'expense', 3);
 
     const incDelta = this.scenarios.filter(s => s.type === 'income').reduce((sum, s) => sum + s.monthlyDelta, 0);
     const expDelta = this.scenarios.filter(s => s.type === 'expense').reduce((sum, s) => sum + Math.abs(s.monthlyDelta), 0);
@@ -239,7 +236,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         const recInc  = this.projectRecurringForMonth(recurring, year, m, 'income');
         const recExp  = this.projectRecurringForMonth(recurring, year, m, 'expense');
         const projInc = recInc;
-        const projExp = recExp + variableMedianExp;
+        const projExp = recExp;
         const bal     = projInc - projExp;
         cum += bal;
 
