@@ -39,7 +39,6 @@ export interface Scenario {
   templateUrl: './reports-view.html',
   styleUrl: './reports-view.css'
 })
-
 export class ReportsViewComponent implements OnInit, AfterViewInit {
   filterForm!: FormGroup;
   isLoading = false;
@@ -166,11 +165,21 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     const year  = this.forecastYear;
     const month = today.getMonth();
 
-    const past      = this.allTransactions.filter(t => new Date(t.date) <= today);
-    const recurring = this.allTransactions.filter(t => (t as any).isRecurring);
+    const past = this.allTransactions.filter(t => new Date(t.date) <= today);
 
-    const variableMedianExp    = this.buildVariableMedian(past, recurring, 'expense', 3);
-    const variableMedianIncome = this.buildVariableMedian(past, recurring, 'income',  3);
+    // Deduplicate recurring transactions by recurringGroupId, keeping the earliest instance
+    const allRecurring = this.allTransactions.filter(t => (t as any).isRecurring || (t as any).is_recurring);
+    const recurringMap = new Map<string, Transaction>();
+    allRecurring.forEach(t => {
+      const groupId = (t as any).recurringGroupId ?? t.id;
+      const existing = recurringMap.get(groupId);
+      if (!existing || new Date(t.date) < new Date(existing.date)) {
+        recurringMap.set(groupId, t);
+      }
+    });
+    const recurring = Array.from(recurringMap.values());
+
+    const variableMedianExp = this.buildVariableMedian(past, recurring, 'expense', 3);
 
     const incDelta = this.scenarios.filter(s => s.type === 'income').reduce((sum, s) => sum + s.monthlyDelta, 0);
     const expDelta = this.scenarios.filter(s => s.type === 'expense').reduce((sum, s) => sum + Math.abs(s.monthlyDelta), 0);
@@ -229,7 +238,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       } else {
         const recInc  = this.projectRecurringForMonth(recurring, year, m, 'income');
         const recExp  = this.projectRecurringForMonth(recurring, year, m, 'expense');
-        const projInc = recInc + variableMedianIncome;
+        const projInc = recInc;
         const projExp = recExp + variableMedianExp;
         const bal     = projInc - projExp;
         cum += bal;
@@ -258,7 +267,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
   private projectRecurringForMonth(transactions: Transaction[], year: number, month: number, type: 'income' | 'expense'): number {
     return transactions
-      .filter(t => t.type === type && (t as any).isRecurring)
+      .filter(t => t.type === type && ((t as any).isRecurring || (t as any).is_recurring))
       .reduce((sum, t) => {
         const freq       = (t as any).recurringFrequency as 'weekly' | 'monthly' | 'yearly' | null;
         const originDate = new Date(t.date);
@@ -278,7 +287,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
   private buildVariableMedian(all: Transaction[], recurring: Transaction[], type: 'income' | 'expense', lookback: number): number {
     const today        = new Date();
-    const recurringIds = new Set(recurring.map(t => (t as any).id));
+    const recurringIds = new Set(recurring.map(t => t.id));
     const monthlyTotals: number[] = [];
 
     for (let i = 1; i <= lookback; i++) {
@@ -295,7 +304,11 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       const total = all
         .filter(t => {
           const td = new Date(t.date);
-          return t.type === type && td.getFullYear() === yr && td.getMonth() === mo && !recurringIds.has((t as any).id);
+          return t.type === type &&
+            td.getFullYear() === yr &&
+            td.getMonth() === mo &&
+            !(t as any).isRecurring &&
+            !(t as any).is_recurring;
         })
         .reduce((s, t) => s + Number(t.amount), 0);
 
