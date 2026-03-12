@@ -282,41 +282,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       }, 0);
   }
 
-  private buildVariableMedian(all: Transaction[], recurring: Transaction[], type: 'income' | 'expense', lookback: number): number {
-    const today        = new Date();
-    const recurringIds = new Set(recurring.map(t => t.id));
-    const monthlyTotals: number[] = [];
-
-    for (let i = 1; i <= lookback; i++) {
-      const d  = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      const yr = d.getFullYear();
-      const mo = d.getMonth();
-
-      const hasActivity = all.some(t => {
-        const td = new Date(t.date);
-        return t.type === 'income' && td.getFullYear() === yr && td.getMonth() === mo;
-      });
-      if (!hasActivity) continue;
-
-      const total = all
-        .filter(t => {
-          const td = new Date(t.date);
-          return t.type === type &&
-            td.getFullYear() === yr &&
-            td.getMonth() === mo &&
-            !(t as any).isRecurring &&
-            !(t as any).is_recurring;
-        })
-        .reduce((s, t) => s + Number(t.amount), 0);
-
-      monthlyTotals.push(total);
-    }
-
-    if (monthlyTotals.length === 0) return 0;
-    const sorted = [...monthlyTotals].sort((a, b) => a - b);
-    const mid    = Math.floor(sorted.length / 2);
-    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-  }
 
   private actualMonthData(transactions: Transaction[], year: number, month: number): { income: number; expenses: number } {
     const t = transactions.filter(t => {
