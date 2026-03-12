@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../layout/navbar/navbar';
@@ -15,15 +15,12 @@ Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
-  encapsulation: ViewEncapsulation.None,
   imports: [CommonModule, RouterModule, NavbarComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
-
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
-  private viewInitialized = false;
   private subs: Subscription[] = [];
 
   userName = '';
@@ -80,7 +77,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.viewInitialized = true;
     this.loadData();
   }
 
@@ -112,14 +108,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   loadData(): void {
     this.isLoading = true;
 
-    const today = new Date();
-    const start = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 1));
-    const end   = this.fmtDate(new Date(today.getFullYear(), today.getMonth() + 1, 0));
+    const today     = new Date();
+    const start     = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 1));
+    const end       = this.fmtDate(new Date(today.getFullYear(), today.getMonth() + 1, 0));
     const todayStr  = this.fmtDate(today);
     const prevStart = this.fmtDate(new Date(today.getFullYear(), today.getMonth() - 1, 1));
     const prevEnd   = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 0));
 
-    let pending = 6;
+    let pending = 5;
     const done = () => {
       if (--pending === 0) {
         this.calcMetrics();
@@ -158,10 +154,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (data: any) => {
           const all: Transaction[] = Array.isArray(data) ? data : (data.transactions || data.data || []);
 
-          const visible = all.filter((t: Transaction) => {
-            const d = new Date(t.date);
-            return d <= today;
-          });
+          const visible = all.filter((t: Transaction) => new Date(t.date) <= today);
 
           this.totalIncome = visible
             .filter((t: Transaction) => t.type === 'income')
@@ -171,7 +164,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             .filter((t: Transaction) => t.type === 'expense')
             .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
 
-          this.balance = this.totalIncome - this.totalExpense;
+          this.balance          = this.totalIncome - this.totalExpense;
           this.transactionCount = visible.length;
 
           const prevVisible = visible.filter((t: Transaction) => {
@@ -179,27 +172,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             return d >= prevStart && d <= prevEnd;
           });
 
-          const prevIncome = prevVisible
-            .filter((t: Transaction) => t.type === 'income')
-            .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
+          this.incomeVsLastMonth  = this.totalIncome  - prevVisible.filter((t: Transaction) => t.type === 'income') .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
+          this.expenseVsLastMonth = this.totalExpense - prevVisible.filter((t: Transaction) => t.type === 'expense').reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
 
-          const prevExpense = prevVisible
-            .filter((t: Transaction) => t.type === 'expense')
-            .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
-
-          this.incomeVsLastMonth = this.totalIncome - prevIncome;
-          this.expenseVsLastMonth = this.totalExpense - prevExpense;
-
-          done();
-        },
-        error: () => done()
-      })
-    );
-
-    this.subs.push(
-      this.transactionService.getAll().subscribe({
-        next: (data: any) => {
-          const all: Transaction[] = Array.isArray(data) ? data : (data.transactions || data.data || []);
           const txs = all.filter((t: Transaction) => {
             const d = new Date(t.date).toISOString().split('T')[0];
             return d >= start && d <= end;
@@ -210,10 +185,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             .slice(0, 5);
 
           this.spentToday = txs
-            .filter((t: Transaction) => {
-              const d = new Date(t.date).toISOString().split('T')[0];
-              return d === todayStr && t.type === 'expense';
-            })
+            .filter((t: Transaction) => new Date(t.date).toISOString().split('T')[0] === todayStr && t.type === 'expense')
             .reduce((sum: number, t: Transaction) => sum + Math.abs(Number(t.amount)), 0);
 
           const weekly   = [0, 0, 0, 0, 0, 0, 0];
@@ -241,9 +213,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             Number(b.month) === today.getMonth() + 1 &&
             Number(b.year)  === today.getFullYear()
           );
-          this.totalBudget = budgets.reduce((s, b) => s + Number(b.amount || 0), 0);
+          this.totalBudget         = budgets.reduce((s, b) => s + Number(b.amount || 0), 0);
           this.budgetsSortedByRisk = [...budgets].sort((a, b) => this.riskScore(b) - this.riskScore(a));
-          this.alertBudget = this.budgetsSortedByRisk.find(b => this.budgetStatus(b) === 'danger') || null;
+          this.alertBudget         = this.budgetsSortedByRisk.find(b => this.budgetStatus(b) === 'danger') || null;
           done();
         },
         error: () => done()
