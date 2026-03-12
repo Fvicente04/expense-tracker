@@ -68,12 +68,12 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   newScenarioAmount = 0;
 
   readonly QUICK_SCENARIOS: Omit<Scenario, 'id'>[] = [
-    { label: '+\u20AC200 savings/month',           type: 'income',  monthlyDelta:  200 },
-    { label: 'Salary raise +\u20AC500',            type: 'income',  monthlyDelta:  500 },
-    { label: 'Side hustle +\u20AC800',             type: 'income',  monthlyDelta:  800 },
-    { label: 'Remove subscription \u2212\u20AC50', type: 'expense', monthlyDelta: -50  },
-    { label: 'Cut dining \u2212\u20AC150',         type: 'expense', monthlyDelta: -150 },
-    { label: 'Extra rent \u2212\u20AC300',         type: 'expense', monthlyDelta: -300 },
+    { label: '+\u20AC200 savings/month', type: 'income', monthlyDelta: 200 },
+    { label: 'Salary raise +\u20AC500', type: 'income', monthlyDelta: 500 },
+    { label: 'Side hustle +\u20AC800', type: 'income', monthlyDelta: 800 },
+    { label: 'Remove subscription \u2212\u20AC50', type: 'expense', monthlyDelta: -50 },
+    { label: 'Cut dining \u2212\u20AC150', type: 'expense', monthlyDelta: -150 },
+    { label: 'Extra rent \u2212\u20AC300', type: 'expense', monthlyDelta: -300 },
   ];
 
   constructor(
@@ -81,7 +81,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     private reportService: ReportService,
     private transactionService: TransactionService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void { this.initForm(); }
 
@@ -93,10 +93,10 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   initForm(): void {
     const today = new Date();
     const start = new Date(today.getFullYear(), today.getMonth(), 1);
-    const end   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     this.filterForm = this.fb.group({
       startDate: [this.fmtDate(start)],
-      endDate:   [this.fmtDate(end)]
+      endDate: [this.fmtDate(end)]
     });
   }
 
@@ -104,11 +104,11 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   onFilterChange(): void { this.loadReports(); }
 
   private prevDates(): { start: string; end: string } {
-    const s    = new Date(this.filterForm.get('startDate')?.value);
-    const e    = new Date(this.filterForm.get('endDate')?.value);
+    const s = new Date(this.filterForm.get('startDate')?.value);
+    const e = new Date(this.filterForm.get('endDate')?.value);
     const days = Math.round((e.getTime() - s.getTime()) / 86_400_000) + 1;
-    const pe   = new Date(s); pe.setDate(pe.getDate() - 1);
-    const ps   = new Date(pe); ps.setDate(ps.getDate() - (days - 1));
+    const pe = new Date(s); pe.setDate(pe.getDate() - 1);
+    const ps = new Date(pe); ps.setDate(ps.getDate() - (days - 1));
     return { start: this.fmtDate(ps), end: this.fmtDate(pe) };
   }
 
@@ -119,8 +119,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     this.quickInsights = [];
 
     const start = this.filterForm.get('startDate')?.value;
-    const end   = this.filterForm.get('endDate')?.value;
-    const prev  = this.prevDates();
+    const end = this.filterForm.get('endDate')?.value;
+    const prev = this.prevDates();
 
     const loaded = { summary: false, prevSummary: false, category: false, prevCat: false, trend: false, transactions: false };
 
@@ -134,27 +134,27 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     };
 
     this.reportService.getSummary(start, end).subscribe({
-      next:  d => { this.summary = d; loaded.summary = true; check(); },
+      next: d => { this.summary = d; loaded.summary = true; check(); },
       error: () => { this.errorMessage = 'Failed to load summary'; this.isLoading = false; }
     });
     this.reportService.getSummary(prev.start, prev.end).subscribe({
-      next:  d => { this.previousSummary = d; loaded.prevSummary = true; check(); },
+      next: d => { this.previousSummary = d; loaded.prevSummary = true; check(); },
       error: () => { loaded.prevSummary = true; check(); }
     });
     this.reportService.getByCategory('expense', start, end).subscribe({
-      next:  d => { this.expensesByCategory = d; loaded.category = true; check(); },
+      next: d => { this.expensesByCategory = d; loaded.category = true; check(); },
       error: () => { loaded.category = true; check(); }
     });
     this.reportService.getByCategory('expense', prev.start, prev.end).subscribe({
-      next:  d => { this.previousPeriodCategories = d; loaded.prevCat = true; check(); },
+      next: d => { this.previousPeriodCategories = d; loaded.prevCat = true; check(); },
       error: () => { this.previousPeriodCategories = []; loaded.prevCat = true; check(); }
     });
     this.reportService.getMonthlyTrend(6).subscribe({
-      next:  d => { this.monthlyTrend = d; loaded.trend = true; check(); },
+      next: d => { this.monthlyTrend = d; loaded.trend = true; check(); },
       error: () => { loaded.trend = true; check(); }
     });
     this.transactionService.getAll().subscribe({
-      next:  d => { this.allTransactions = d ?? []; loaded.transactions = true; check(); },
+      next: d => { this.allTransactions = d ?? []; loaded.transactions = true; check(); },
       error: () => { this.allTransactions = []; loaded.transactions = true; check(); }
     });
   }
@@ -162,7 +162,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   buildForecast(): void {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
-    const year  = this.forecastYear;
+    const year = this.forecastYear;
     const month = today.getMonth();
 
     const past = this.allTransactions.filter(t => new Date(t.date) <= today);
@@ -182,18 +182,18 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     const expDelta = this.scenarios.filter(s => s.type === 'expense').reduce((sum, s) => sum + Math.abs(s.monthlyDelta), 0);
 
     let cum = 0, simCum = 0;
-    const months: ForecastMonth[]    = [];
+    const months: ForecastMonth[] = [];
     const simMonths: ForecastMonth[] = [];
-    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     for (let m = 0; m <= 11; m++) {
-      const isPast    = m < month;
+      const isPast = m < month;
       const isCurrent = m === month;
 
       if (isPast) {
         const actual = this.actualMonthData(past, year, m);
-        const bal    = actual.income - actual.expenses;
-        cum    += bal;
+        const bal = actual.income - actual.expenses;
+        cum += bal;
         simCum += bal;
         const base: ForecastMonth = {
           label: names[m], year, month: m,
@@ -204,21 +204,20 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         simMonths.push({ ...base, cumulative: simCum });
 
       } else if (isCurrent) {
-        const actual        = this.actualMonthData(past, year, m);
-        const recInc        = this.projectRecurringForMonth(recurring, year, m, 'income');
-        const recExp        = this.projectRecurringForMonth(recurring, year, m, 'expense');
-        const alreadyRecInc = this.recurringBeforeToday(recurring, year, m, 'income',  today);
-        const alreadyRecExp = this.recurringBeforeToday(recurring, year, m, 'expense', today);
-        const totalIncome   = actual.income   + Math.max(0, recInc - alreadyRecInc);
-        const totalExp      = actual.expenses + Math.max(0, recExp - alreadyRecExp);
-        const bal           = totalIncome - totalExp;
+        const actualIncome = past.filter(t => { const d = new Date(t.date); return t.type === 'income' && d.getFullYear() === year && d.getMonth() === m && !(t as any).isRecurring && !(t as any).is_recurring; }).reduce((s, t) => s + Number(t.amount), 0);
+        const actualExpenses = past.filter(t => { const d = new Date(t.date); return t.type === 'expense' && d.getFullYear() === year && d.getMonth() === m && !(t as any).isRecurring && !(t as any).is_recurring; }).reduce((s, t) => s + Number(t.amount), 0);
+        const recInc = this.projectRecurringForMonth(recurring, year, m, 'income');
+        const recExp = this.projectRecurringForMonth(recurring, year, m, 'expense');
+        const totalIncome = actualIncome + recInc;
+        const totalExp = actualExpenses + recExp;
+        const bal = totalIncome - totalExp;
         cum += bal;
 
         const daysInMonth = new Date(year, m + 1, 0).getDate();
-        const remaining   = Math.max(0, (daysInMonth - today.getDate()) / daysInMonth);
-        const simIncome   = totalIncome + (incDelta * remaining);
-        const simExp      = totalExp    + (expDelta * remaining);
-        const simBal      = simIncome - simExp;
+        const remaining = Math.max(0, (daysInMonth - today.getDate()) / daysInMonth);
+        const simIncome = totalIncome + (incDelta * remaining);
+        const simExp = totalExp + (expDelta * remaining);
+        const simBal = simIncome - simExp;
         simCum += simBal;
 
         months.push({
@@ -233,16 +232,16 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         });
 
       } else {
-        const recInc  = this.projectRecurringForMonth(recurring, year, m, 'income');
-        const recExp  = this.projectRecurringForMonth(recurring, year, m, 'expense');
+        const recInc = this.projectRecurringForMonth(recurring, year, m, 'income');
+        const recExp = this.projectRecurringForMonth(recurring, year, m, 'expense');
         const projInc = recInc;
         const projExp = recExp;
-        const bal     = projInc - projExp;
+        const bal = projInc - projExp;
         cum += bal;
 
         const simIncome = projInc + incDelta;
-        const simExp2   = projExp + expDelta;
-        const simBal    = simIncome - simExp2;
+        const simExp2 = projExp + expDelta;
+        const simBal = simIncome - simExp2;
         simCum += simBal;
 
         months.push({
@@ -258,7 +257,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       }
     }
 
-    this.forecastMonths  = months;
+    this.forecastMonths = months;
     this.simulatedMonths = simMonths;
   }
 
@@ -266,9 +265,9 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     return transactions
       .filter(t => t.type === type && ((t as any).isRecurring || (t as any).is_recurring))
       .reduce((sum, t) => {
-        const freq       = (t as any).recurringFrequency as 'weekly' | 'monthly' | 'yearly' | null;
+        const freq = (t as any).recurringFrequency as 'weekly' | 'monthly' | 'yearly' | null;
         const originDate = new Date(t.date);
-        const endDate    = (t as any).recurringEndDate ? new Date((t as any).recurringEndDate) : null;
+        const endDate = (t as any).recurringEndDate ? new Date((t as any).recurringEndDate) : null;
         const targetDate = new Date(year, month, 1);
 
         if (endDate && targetDate > endDate) return sum;
@@ -276,8 +275,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
         const amount = Number(t.amount);
         if (freq === 'monthly') return sum + amount;
-        if (freq === 'weekly')  return sum + amount * 4.33;
-        if (freq === 'yearly')  return originDate.getMonth() === month ? sum + amount : sum;
+        if (freq === 'weekly') return sum + amount * 4.33;
+        if (freq === 'yearly') return originDate.getMonth() === month ? sum + amount : sum;
         return sum;
       }, 0);
   }
@@ -289,7 +288,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       return d.getFullYear() === year && d.getMonth() === month;
     });
     return {
-      income:   t.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0),
+      income: t.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
       expenses: t.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
     };
   }
@@ -310,23 +309,23 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   getMonthDelta(idx: number): { income: number; expenses: number; balance: number } | null {
     if (!this.scenarios.length) return null;
     const base = this.forecastMonths[idx];
-    const sim  = this.simulatedMonths[idx];
+    const sim = this.simulatedMonths[idx];
     if (!base || !sim || base.isPast) return null;
-    const income   = sim.projectedIncome   - base.projectedIncome;
+    const income = sim.projectedIncome - base.projectedIncome;
     const expenses = sim.projectedExpenses - base.projectedExpenses;
     if (Math.abs(income) < 0.01 && Math.abs(expenses) < 0.01) return null;
     return { income, expenses, balance: sim.balance - base.balance };
   }
 
   get simulatedYearEnd(): ForecastMonth | null { return this.simulatedMonths.find(m => m.month === 11) ?? null; }
-  get baseYearEnd(): ForecastMonth | null       { return this.forecastMonths.find(m => m.month === 11) ?? null; }
+  get baseYearEnd(): ForecastMonth | null { return this.forecastMonths.find(m => m.month === 11) ?? null; }
   get yearEndDelta(): number { return (this.simulatedYearEnd?.cumulative ?? 0) - (this.baseYearEnd?.cumulative ?? 0); }
 
   toggleSimulator(): void { this.showSimulator = !this.showSimulator; this.resetNewForm(); }
 
   resetNewForm(): void {
-    this.newScenarioLabel  = '';
-    this.newScenarioType   = 'income';
+    this.newScenarioLabel = '';
+    this.newScenarioType = 'income';
     this.newScenarioAmount = 0;
   }
 
@@ -341,7 +340,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     if (!this.newScenarioLabel.trim() || this.newScenarioAmount <= 0) return;
     const delta = this.newScenarioType === 'expense'
       ? -Math.abs(this.newScenarioAmount)
-      :  Math.abs(this.newScenarioAmount);
+      : Math.abs(this.newScenarioAmount);
     this.scenarios = [...this.scenarios, {
       id: Date.now().toString(),
       label: this.newScenarioLabel.trim(),
@@ -367,8 +366,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     this.quickInsights = [];
     if (this.previousSummary.totalExpense > 0) {
       const diff = this.summary.totalExpense - this.previousSummary.totalExpense;
-      const pct  = Math.abs(Math.round((diff / this.previousSummary.totalExpense) * 100));
-      if (diff > 0)      this.quickInsights.push({ type: 'up',   text: `Expenses up <strong>${pct}%</strong> vs previous period` });
+      const pct = Math.abs(Math.round((diff / this.previousSummary.totalExpense) * 100));
+      if (diff > 0) this.quickInsights.push({ type: 'up', text: `Expenses up <strong>${pct}%</strong> vs previous period` });
       else if (diff < 0) this.quickInsights.push({ type: 'down', text: `Expenses down <strong>${pct}%</strong> vs previous period` });
     }
     if (this.expensesByCategory.length > 0 && this.summary.totalExpense > 0) {
@@ -378,13 +377,13 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     }
     if (this.summary.totalIncome > 0) {
       const rate = Math.round((this.summary.balance / this.summary.totalIncome) * 100);
-      if (rate > 0)      this.quickInsights.push({ type: 'down', text: `You saved <strong>${rate}%</strong> of your income this period` });
-      else if (rate < 0) this.quickInsights.push({ type: 'up',   text: `Spent <strong>\u20AC${Math.abs(this.summary.balance).toFixed(0)}</strong> more than earned this period` });
+      if (rate > 0) this.quickInsights.push({ type: 'down', text: `You saved <strong>${rate}%</strong> of your income this period` });
+      else if (rate < 0) this.quickInsights.push({ type: 'up', text: `Spent <strong>\u20AC${Math.abs(this.summary.balance).toFixed(0)}</strong> more than earned this period` });
     }
     const dec = this.forecastMonths.find(m => m.month === 11) ?? null;
     if (dec) {
       if (dec.cumulative > 0) this.quickInsights.push({ type: 'down', text: `On track to end ${this.forecastYear} with <strong>\u20AC${dec.cumulative.toFixed(0)}</strong> accumulated balance` });
-      else                    this.quickInsights.push({ type: 'up',   text: `Forecast shows a <strong>\u20AC${Math.abs(dec.cumulative).toFixed(0)}</strong> deficit by end of ${this.forecastYear}` });
+      else this.quickInsights.push({ type: 'up', text: `Forecast shows a <strong>\u20AC${Math.abs(dec.cumulative).toFixed(0)}</strong> deficit by end of ${this.forecastYear}` });
     }
   }
 
@@ -393,10 +392,10 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   private getTop5WithOther(): { labels: string[]; data: number[]; colors: string[] } {
     if (!this.expensesByCategory.length) return { labels: [], data: [], colors: [] };
     const sorted = [...this.expensesByCategory].sort((a, b) => b.amount - a.amount);
-    const top5   = sorted.slice(0, 5);
-    const rest   = sorted.slice(5);
+    const top5 = sorted.slice(0, 5);
+    const rest = sorted.slice(5);
     const labels = top5.map(c => c.categoryName);
-    const data   = top5.map(c => c.amount);
+    const data = top5.map(c => c.amount);
     const colors = top5.map(c => c.categoryColor);
     if (rest.length) { labels.push('Other'); data.push(rest.reduce((s, c) => s + c.amount, 0)); colors.push('#94a3b8'); }
     return { labels, data, colors };
@@ -421,7 +420,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         }
       }
     };
-    try { this.categoryChart = new Chart(ctx, config); } catch {}
+    try { this.categoryChart = new Chart(ctx, config); } catch { }
   }
 
   private createTrendChart(): void {
@@ -436,8 +435,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       data: {
         labels: this.monthlyTrend.map(m => `${m.month} ${m.year}`),
         datasets: [
-          { label: 'Income',   data: this.monthlyTrend.map(m => m.income),  borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)',  borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: '#22c55e', pointBorderColor: '#fff', pointBorderWidth: 2 },
-          { label: 'Expenses', data: this.monthlyTrend.map(m => m.expense), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)',  borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2 }
+          { label: 'Income', data: this.monthlyTrend.map(m => m.income), borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: '#22c55e', pointBorderColor: '#fff', pointBorderWidth: 2 },
+          { label: 'Expenses', data: this.monthlyTrend.map(m => m.expense), borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', borderWidth: 3, tension: 0.4, fill: true, pointRadius: 5, pointHoverRadius: 8, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2 }
         ]
       },
       options: {
@@ -452,7 +451,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
         }
       }
     };
-    try { this.trendChart = new Chart(ctx, config); } catch {}
+    try { this.trendChart = new Chart(ctx, config); } catch { }
   }
 
   printReport(): void { window.print(); }
@@ -465,7 +464,7 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
 
   getVsLastPeriod(category: CategoryReport): { pct: number; direction: 'up' | 'down' | 'same' } | null {
     if (!this.previousPeriodCategories.length) return null;
-    const prev    = this.previousPeriodCategories.find(c => c.categoryName === category.categoryName);
+    const prev = this.previousPeriodCategories.find(c => c.categoryName === category.categoryName);
     const prevAmt = prev?.amount ?? 0;
     if (prevAmt === 0 && category.amount === 0) return null;
     if (prevAmt === 0) return { pct: 100, direction: 'up' };
