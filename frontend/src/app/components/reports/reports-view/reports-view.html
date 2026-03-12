@@ -194,8 +194,7 @@
         <div class="forecast-header">
           <div class="forecast-header-left">
             <h2 class="section-title">{{ forecastYear }} Annual Forecast</h2>
-            <p class="forecast-subtitle">Past months show actuals &middot; Future months combine recurring + 3-month
-              variable average</p>
+            <p class="forecast-subtitle">Past months show actuals &middot; Future months based on recurring transactions only</p>
           </div>
           <div class="forecast-header-right">
             <button class="whatif-btn" [class.active]="showSimulator" (click)="toggleSimulator()">
@@ -353,7 +352,7 @@
         </div>
 
         <p class="forecast-note">
-          Estimates based on recurring transactions + 3-month variable average.
+          Estimates based on recurring transactions only.
           <ng-container *ngIf="scenarios.length > 0">
             &nbsp;&middot;&nbsp;<strong>Simulation active</strong> &#x2014; {{ scenarios.length }} scenario{{
             scenarios.length > 1 ? 's' : '' }} applied. Nothing has been saved.
