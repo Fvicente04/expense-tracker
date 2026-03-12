@@ -21,7 +21,6 @@
     <div class="filters-card">
       <div class="filters-top">
         <h3>Filters</h3>
-
         <div class="form-actions">
           <button class="btn-secondary" (click)="clearFilters()" style="padding: 6px 14px; font-size: 13px;">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
@@ -78,7 +77,6 @@
           <div class="summary-value">€{{ fmt(totalIncome()) }}</div>
         </div>
       </div>
-
       <div class="summary-item expense">
         <div class="summary-icon">&#x1F4B8;</div>
         <div class="summary-info">
@@ -86,7 +84,6 @@
           <div class="summary-value">€{{ fmt(totalExpenses()) }}</div>
         </div>
       </div>
-
       <div class="summary-item balance">
         <div class="summary-icon">&#x2696;&#xFE0F;</div>
         <div class="summary-info">
@@ -156,17 +153,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let transaction of filtered" [class.row-selected]="selected.has(transaction.id)">
+          <tr *ngFor="let transaction of pagedTransactions" [class.row-selected]="selected.has(transaction.id)">
             <td class="col-checkbox">
               <input type="checkbox" class="row-checkbox" [checked]="selected.has(transaction.id)"
                 (change)="toggleOne(transaction.id)" />
             </td>
-
             <td data-label="Date">
               {{ fmtDate(transaction.date) }}
               <span class="recurring-badge" *ngIf="(transaction)['isRecurring']" title="Recurring">&#x1F501;</span>
             </td>
-
             <td data-label="Category">
               <div class="category-cell">
                 <div class="category-icon" [style.background]="catColor(transaction) + '20'">
@@ -175,16 +170,13 @@
                 <span class="category-name">{{ catName(transaction) }}</span>
               </div>
             </td>
-
             <td data-label="Description">{{ transaction.description }}</td>
-
             <td data-label="Amount">
               <span class="amount-cell" [class.income]="transaction.type === 'income'"
                 [class.expense]="transaction.type === 'expense'">
                 {{ transaction.type === 'income' ? '+' : '–' }}€{{ fmt(transaction.amount) }}
               </span>
             </td>
-
             <td data-label="Actions" class="actions-cell">
               <button class="action-btn edit" (click)="editTransaction(transaction)" title="Edit">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
@@ -193,7 +185,6 @@
                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-
               <button class="action-btn delete" (click)="deleteTransaction(transaction.id)" title="Delete">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path
@@ -205,6 +196,32 @@
           </tr>
         </tbody>
       </table>
+
+      <div class="pagination" *ngIf="!isLoading && filtered.length > pageSize">
+        <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ filtered.length }}</span>
+        <div class="pagination-controls">
+          <button class="page-btn prev-next" (click)="prevPage()" [disabled]="currentPage === 1">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+
+          <ng-container *ngFor="let p of pageNumbers">
+            <span *ngIf="p === '...'" class="page-ellipsis">...</span>
+            <button *ngIf="p !== '...'" class="page-btn" [class.active]="p === currentPage" (click)="goToPage(+p)">
+              {{ p }}
+            </button>
+          </ng-container>
+
+          <button class="page-btn prev-next" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
     </div>
   </div>
@@ -240,12 +257,11 @@
                 <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'income'"
                   (click)="setType('income')">
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                      stroke-linejoin="round" />
+                    <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                   Income
                 </button>
-
                 <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'expense'"
                   (click)="setType('expense')">
                   <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -262,7 +278,8 @@
               <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00"
                 [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid" />
               <span class="error-message"
-                *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is required</span>
+                *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is
+                required</span>
             </div>
 
             <div class="form-group">
@@ -278,24 +295,25 @@
               <select id="categoryId" formControlName="categoryId"
                 [class.error]="form.get('categoryId')?.touched && form.get('categoryId')?.invalid">
                 <option value="">Select a category</option>
-                <option *ngFor="let category of filteredCats()" [value]="category.id">
-                  {{ category.icon }} {{ category.name }}
-                </option>
+                <option *ngFor="let category of filteredCats()" [value]="category.id">{{ category.icon }} {{
+                  category.name }}</option>
               </select>
               <span class="error-message"
-                *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is required</span>
+                *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is
+                required</span>
             </div>
 
             <div class="form-group span-2">
               <label for="description">Description</label>
-              <textarea id="description" formControlName="description" rows="2" placeholder="Enter transaction details..."
+              <textarea id="description" formControlName="description" rows="2"
+                placeholder="Enter transaction details..."
                 [class.error]="form.get('description')?.touched && form.get('description')?.invalid"></textarea>
               <span class="error-message"
-                *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is required</span>
+                *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is
+                required</span>
             </div>
 
             <div class="recurring-section span-2">
-
               <div class="recurring-toggle-row" (click)="toggleRecurring()">
                 <div class="recurring-toggle-info">
                   <span class="recurring-icon">&#x1F501;</span>
@@ -312,7 +330,6 @@
 
               <div class="recurring-options" *ngIf="form.get('isRecurring')?.value">
                 <div class="recurring-fields">
-
                   <div class="form-group">
                     <label>Frequency</label>
                     <div class="frequency-options">
@@ -327,25 +344,20 @@
                         (click)="setFrequency('yearly')">Yearly</button>
                     </div>
                   </div>
-
                   <div class="form-group">
                     <label>End date <span class="optional-tag">optional</span></label>
                     <input type="date" formControlName="recurringEndDate" [min]="form.get('date')?.value" />
                     <p class="field-hint">Leave empty to repeat indefinitely (max 60 occurrences)</p>
                   </div>
-
                   <div class="recurring-preview" *ngIf="form.get('recurringFrequency')?.value">
                     <span>&#x1F4C5;</span>
                     <span>{{ recurringPreview() }}</span>
                   </div>
-
                 </div>
               </div>
-
             </div>
 
           </div>
-
         </div>
 
         <div class="modal-footer">

@@ -14,7 +14,6 @@ import { Category } from '../../../models/category';
   templateUrl: './transaction-list.html',
   styleUrl: './transaction-list.css'
 })
-
 export class TransactionListComponent implements OnInit {
   transactions: Transaction[] = [];
   filtered: Transaction[] = [];
@@ -32,6 +31,9 @@ export class TransactionListComponent implements OnInit {
   showFuture = false;
 
   filters = { type: '', categoryId: '', startDate: '', endDate: '' };
+
+  pageSize = 10;
+  currentPage = 1;
 
   constructor(
     private transactionService: TransactionService,
@@ -79,7 +81,7 @@ export class TransactionListComponent implements OnInit {
 
     this.transactionService.getAll().subscribe({
       next: data => {
-        this.transactions = data ?? [];
+        this.transactions = (data ?? []).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         this.applyFilters();
         this.isLoading = false;
       },
@@ -94,16 +96,19 @@ export class TransactionListComponent implements OnInit {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
     this.selected.clear();
+    this.currentPage = 1;
 
-    this.filtered = this.transactions.filter(t => {
-      const typeMatch = !this.filters.type || t.type === this.filters.type;
-      const categoryMatch = !this.filters.categoryId || String(t.categoryId) === String(this.filters.categoryId);
-      const futureMatch = this.showFuture || new Date(t.date) <= today;
-      let dateMatch = true;
-      if (this.filters.startDate) dateMatch = dateMatch && new Date(t.date) >= new Date(this.filters.startDate);
-      if (this.filters.endDate) dateMatch = dateMatch && new Date(t.date) <= new Date(this.filters.endDate);
-      return typeMatch && categoryMatch && dateMatch && futureMatch;
-    });
+    this.filtered = this.transactions
+      .filter(t => {
+        const typeMatch = !this.filters.type || t.type === this.filters.type;
+        const categoryMatch = !this.filters.categoryId || String(t.categoryId) === String(this.filters.categoryId);
+        const futureMatch = this.showFuture || new Date(t.date) <= today;
+        let dateMatch = true;
+        if (this.filters.startDate) dateMatch = dateMatch && new Date(t.date) >= new Date(this.filters.startDate);
+        if (this.filters.endDate) dateMatch = dateMatch && new Date(t.date) <= new Date(this.filters.endDate);
+        return typeMatch && categoryMatch && dateMatch && futureMatch;
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
   clearFilters(): void {
@@ -112,15 +117,46 @@ export class TransactionListComponent implements OnInit {
     this.applyFilters();
   }
 
+  get totalPages(): number { return Math.max(1, Math.ceil(this.filtered.length / this.pageSize)); }
+  get pagedTransactions(): Transaction[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+  get pageStart(): number { return this.filtered.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1; }
+  get pageEnd(): number { return Math.min(this.currentPage * this.pageSize, this.filtered.length); }
+
+  prevPage(): void { if (this.currentPage > 1) this.currentPage--; }
+  nextPage(): void { if (this.currentPage < this.totalPages) this.currentPage++; }
+  goToPage(page: number): void { this.currentPage = page; }
+
+  get pageNumbers(): (number | '...')[] {
+    const total = this.totalPages;
+    if (total <= 10) return Array.from({ length: total }, (_, i) => i + 1);
+
+    const curr = this.currentPage;
+    const visible = new Set<number>();
+    visible.add(1);
+    visible.add(total);
+    for (let i = Math.max(1, curr - 2); i <= Math.min(total, curr + 2); i++) visible.add(i);
+
+    const sorted = Array.from(visible).sort((a, b) => a - b);
+    const pages: (number | '...')[] = [];
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i] - sorted[i - 1] > 1) pages.push('...');
+      pages.push(sorted[i]);
+    }
+    return pages;
+  }
+
   get allSelected(): boolean {
-    return this.filtered.length > 0 && this.filtered.every(t => this.selected.has(t.id));
+    return this.pagedTransactions.length > 0 && this.pagedTransactions.every(t => this.selected.has(t.id));
   }
 
   get someSelected(): boolean { return this.selected.size > 0 && !this.allSelected; }
 
   toggleAll(event: Event): void {
-    if ((event.target as HTMLInputElement).checked) this.filtered.forEach(t => this.selected.add(t.id));
-    else this.selected.clear();
+    if ((event.target as HTMLInputElement).checked) this.pagedTransactions.forEach(t => this.selected.add(t.id));
+    else this.pagedTransactions.forEach(t => this.selected.delete(t.id));
   }
 
   toggleOne(id: string): void {
@@ -141,14 +177,8 @@ export class TransactionListComponent implements OnInit {
     ids.forEach(id => this.transactionService.delete(id).subscribe({ next: finish, error: finish }));
   }
 
-  totalIncome(): number {
-    return this.filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
-  }
-
-  totalExpenses(): number {
-    return this.filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
-  }
-
+  totalIncome(): number { return this.filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0); }
+  totalExpenses(): number { return this.filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0); }
   balance(): number { return this.totalIncome() - this.totalExpenses(); }
   fmt(value: any): string { return Number(value || 0).toFixed(2); }
   fmtDate(date: string): string {
@@ -168,12 +198,8 @@ export class TransactionListComponent implements OnInit {
   setType(type: 'income' | 'expense'): void {
     const currentCategoryId = this.form.get('categoryId')?.value;
     const currentCategory = this.categories.find(c => String(c.id) === String(currentCategoryId));
-
     this.form.patchValue({ type });
-
-    if (!currentCategory || currentCategory.type !== type) {
-      this.setDefaultCategory(type);
-    }
+    if (!currentCategory || currentCategory.type !== type) this.setDefaultCategory(type);
   }
 
   catColor(t: Transaction): string { return t.category?.color || '#6b7280'; }
@@ -182,16 +208,10 @@ export class TransactionListComponent implements OnInit {
 
   toggleRecurring(): void {
     const curr = this.form.get('isRecurring')?.value;
-    this.form.patchValue({
-      isRecurring: !curr,
-      recurringFrequency: !curr ? 'monthly' : null,
-      recurringEndDate: null
-    });
+    this.form.patchValue({ isRecurring: !curr, recurringFrequency: !curr ? 'monthly' : null, recurringEndDate: null });
   }
 
-  setFrequency(freq: 'weekly' | 'monthly' | 'yearly'): void {
-    this.form.patchValue({ recurringFrequency: freq });
-  }
+  setFrequency(freq: 'weekly' | 'monthly' | 'yearly'): void { this.form.patchValue({ recurringFrequency: freq }); }
 
   recurringPreview(): string {
     const freq = this.form.get('recurringFrequency')?.value;
