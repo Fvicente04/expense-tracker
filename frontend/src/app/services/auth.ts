@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+import { TransactionService } from './transaction';
+import { CategoryService } from './category';
+import { BudgetService } from './budget';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -11,14 +14,24 @@ export class AuthService {
   private userSubject = new BehaviorSubject<any>(null);
   currentUser$ = this.userSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private transactionService: TransactionService,
+    private categoryService: CategoryService,
+    private budgetService: BudgetService
+  ) {
     this.fetchUser();
   }
 
   register(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, data).pipe(
       tap((res: any) => {
-        if (res.token) { this.setToken(res.token); this.fetchUser(); }
+        if (res.token) {
+          this.clearAllCaches();
+          this.setToken(res.token);
+          this.fetchUser();
+        }
       })
     );
   }
@@ -26,7 +39,11 @@ export class AuthService {
   login(credentials: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
       tap((res: any) => {
-        if (res.token) { this.setToken(res.token); this.fetchUser(); }
+        if (res.token) {
+          this.clearAllCaches();
+          this.setToken(res.token);
+          this.fetchUser();
+        }
       })
     );
   }
@@ -44,10 +61,17 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearAllCaches();
     localStorage.removeItem(this.tokenKey);
     this.userSubject.next(null);
     this.router.navigate(['/login']);
   }
+
+  private clearAllCaches(): void {
+  this.transactionService.invalidate();
+  this.categoryService.invalidate();
+  this.budgetService.invalidate();
+}
 
   setToken(token: string): void { localStorage.setItem(this.tokenKey, token); }
   getToken(): string | null { return localStorage.getItem(this.tokenKey); }
