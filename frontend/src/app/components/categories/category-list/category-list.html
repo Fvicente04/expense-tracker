@@ -65,20 +65,20 @@
               <span class="category-badge expense">Expense</span>
             </div>
             <div class="category-actions">
-              <button class="action-btn edit" (click)="editCategory(category)" *ngIf="!category.is_default">
+              <button class="action-btn edit" (click)="editCategory(category)">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
+              <button class="action-btn delete" (click)="deleteCategory(category.id)">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M2 4H3.33333H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                   <path d="M5.33337 4.00004V2.66671C5.33337 2.31309 5.47385 1.97395 5.72390 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.68699 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4.00004M12.6667 4.00004V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4.00004H12.6667Z"
                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <span *ngIf="category.is_default" class="default-badge">Default</span>
+              
             </div>
           </div>
         </div>
@@ -100,20 +100,20 @@
               <span class="category-badge income">Income</span>
             </div>
             <div class="category-actions">
-              <button class="action-btn edit" (click)="editCategory(category)" *ngIf="!category.is_default">
+              <button class="action-btn edit" (click)="editCategory(category)">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <button class="action-btn delete" (click)="deleteCategory(category.id)" *ngIf="!category.is_default">
+              <button class="action-btn delete" (click)="deleteCategory(category.id)">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                   <path d="M2 4H3.33333H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                   <path d="M5.33337 4.00004V2.66671C5.33337 2.31309 5.47385 1.97395 5.72390 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.68699 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4.00004M12.6667 4.00004V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4.00004H12.6667Z"
                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <span *ngIf="category.is_default" class="default-badge">Default</span>
+              
             </div>
           </div>
         </div>
