@@ -39,8 +39,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   spentToday = 0;
 
   monthlyAvgExpense = 0;
-  monthlyAvgIncome  = 0;
-  avgMonthsLoaded   = 0;
+  monthlyAvgIncome = 0;
+  avgMonthsLoaded = 0;
   financialStatus: 'good' | 'warning' | 'danger' = 'good';
   statusLabel = 'On track';
 
@@ -62,7 +62,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private reportService: ReportService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initDate();
@@ -86,13 +86,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initDate(): void {
-    const today  = new Date();
-    const months = ['January','February','March','April','May','June',
-                    'July','August','September','October','November','December'];
+    const today = new Date();
+    const months = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
     this.currentMonthLabel = `${months[today.getMonth()]} ${today.getFullYear()}`;
     this.todayLabel = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     this.totalDaysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    this.dayOfMonth    = today.getDate();
+    this.dayOfMonth = today.getDate();
     this.daysRemaining = this.totalDaysInMonth - this.dayOfMonth + 1;
   }
 
@@ -108,12 +108,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   loadData(): void {
     this.isLoading = true;
 
-    const today     = new Date();
-    const start     = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 1));
-    const end       = this.fmtDate(new Date(today.getFullYear(), today.getMonth() + 1, 0));
-    const todayStr  = this.fmtDate(today);
+    const today = new Date();
+    const start = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 1));
+    const end = this.fmtDate(new Date(today.getFullYear(), today.getMonth() + 1, 0));
+    const todayStr = this.fmtDate(today);
     const prevStart = this.fmtDate(new Date(today.getFullYear(), today.getMonth() - 1, 1));
-    const prevEnd   = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 0));
+    const prevEnd = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 0));
 
     let pending = 5;
     const done = () => {
@@ -128,11 +128,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     let avgExpTotal = 0, avgIncTotal = 0, avgCount = 0;
     for (let i = 1; i <= 3; i++) {
       const mStart = this.fmtDate(new Date(today.getFullYear(), today.getMonth() - i, 1));
-      const mEnd   = this.fmtDate(new Date(today.getFullYear(), today.getMonth() - i + 1, 0));
+      const mEnd = this.fmtDate(new Date(today.getFullYear(), today.getMonth() - i + 1, 0));
       this.subs.push(
         this.reportService.getSummary(mStart, mEnd).subscribe({
           next: (d: any) => {
-            const inc = Number(d.totalIncome  || 0);
+            const inc = Number(d.totalIncome || 0);
             const exp = Number(d.totalExpense || 0);
             if (inc > 0 || exp > 0) {
               avgExpTotal += exp;
@@ -140,8 +140,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               avgCount++;
             }
             this.monthlyAvgExpense = avgCount > 0 ? avgExpTotal / avgCount : 0;
-            this.monthlyAvgIncome  = avgCount > 0 ? avgIncTotal / avgCount : 0;
-            this.avgMonthsLoaded   = avgCount;
+            this.monthlyAvgIncome = avgCount > 0 ? avgIncTotal / avgCount : 0;
+            this.avgMonthsLoaded = avgCount;
             done();
           },
           error: () => done()
@@ -154,43 +154,50 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (data: any) => {
           const all: Transaction[] = Array.isArray(data) ? data : (data.transactions || data.data || []);
 
-          const visible = all.filter((t: Transaction) => new Date(t.date) <= today);
+          const currentMonthTxs = all.filter((t: Transaction) => {
+            const d = new Date(t.date).toISOString().split('T')[0];
+            return d >= start && d <= todayStr;
+          });
 
-          this.totalIncome = visible
+          this.totalIncome = currentMonthTxs
             .filter((t: Transaction) => t.type === 'income')
             .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
 
-          this.totalExpense = visible
+          this.totalExpense = currentMonthTxs
             .filter((t: Transaction) => t.type === 'expense')
             .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
 
-          this.balance          = this.totalIncome - this.totalExpense;
-          this.transactionCount = visible.length;
+          this.balance = this.totalIncome - this.totalExpense;
+          this.transactionCount = currentMonthTxs.length;
 
-          const prevVisible = visible.filter((t: Transaction) => {
+          const prevTxs = all.filter((t: Transaction) => {
             const d = new Date(t.date).toISOString().split('T')[0];
             return d >= prevStart && d <= prevEnd;
           });
 
-          this.incomeVsLastMonth  = this.totalIncome  - prevVisible.filter((t: Transaction) => t.type === 'income') .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
-          this.expenseVsLastMonth = this.totalExpense - prevVisible.filter((t: Transaction) => t.type === 'expense').reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
+          const prevIncome = prevTxs
+            .filter((t: Transaction) => t.type === 'income')
+            .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
+          const prevExpense = prevTxs
+            .filter((t: Transaction) => t.type === 'expense')
+            .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
 
-          const txs = all.filter((t: Transaction) => {
-            const d = new Date(t.date).toISOString().split('T')[0];
-            return d >= start && d <= end;
-          });
+          this.incomeVsLastMonth = this.totalIncome - prevIncome;
+          this.expenseVsLastMonth = this.totalExpense - prevExpense;
 
-          this.recentTransactions = [...txs]
+          this.recentTransactions = [...currentMonthTxs]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 5);
 
-          this.spentToday = txs
-            .filter((t: Transaction) => new Date(t.date).toISOString().split('T')[0] === todayStr && t.type === 'expense')
+          this.spentToday = currentMonthTxs
+            .filter((t: Transaction) =>
+              new Date(t.date).toISOString().split('T')[0] === todayStr && t.type === 'expense'
+            )
             .reduce((sum: number, t: Transaction) => sum + Math.abs(Number(t.amount)), 0);
 
-          const weekly   = [0, 0, 0, 0, 0, 0, 0];
+          const weekly = [0, 0, 0, 0, 0, 0, 0];
           const todayIdx = (today.getDay() + 6) % 7;
-          txs.forEach((t: Transaction) => {
+          currentMonthTxs.forEach((t: Transaction) => {
             if (t.type !== 'expense') return;
             const diff = Math.floor((today.getTime() - new Date(t.date).getTime()) / 86400000);
             if (diff >= 0 && diff < 7) {
@@ -211,11 +218,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           const all: Budget[] = Array.isArray(data) ? data : (data.budgets || data.data || []);
           const budgets = all.filter((b: Budget) =>
             Number(b.month) === today.getMonth() + 1 &&
-            Number(b.year)  === today.getFullYear()
+            Number(b.year) === today.getFullYear()
           );
-          this.totalBudget         = budgets.reduce((s, b) => s + Number(b.amount || 0), 0);
+          this.totalBudget = budgets.reduce((s, b) => s + Number(b.amount || 0), 0);
           this.budgetsSortedByRisk = [...budgets].sort((a, b) => this.riskScore(b) - this.riskScore(a));
-          this.alertBudget         = this.budgetsSortedByRisk.find(b => this.budgetStatus(b) === 'danger') || null;
+          this.alertBudget = this.budgetsSortedByRisk.find(b => this.budgetStatus(b) === 'danger') || null;
           done();
         },
         error: () => done()
@@ -239,7 +246,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   budgetPct(budget: Budget): number {
     const amount = Number(budget.amount || 0);
-    const spent  = Number(budget.spent  || 0);
+    const spent = Number(budget.spent || 0);
     return amount === 0 ? 0 : Math.min((spent / amount) * 100, 100);
   }
 
@@ -262,7 +269,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   riskGroupChanged(index: number): boolean {
     if (index === 0) return false;
     return this.riskScore(this.budgetsSortedByRisk[index]) !==
-           this.riskScore(this.budgetsSortedByRisk[index - 1]);
+      this.riskScore(this.budgetsSortedByRisk[index - 1]);
   }
 
   private buildChart(): void {
@@ -270,10 +277,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!canvas) return;
     if (this.weekChart) this.weekChart.destroy();
 
-    const isDark     = document.body.classList.contains('dark-mode');
-    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+    const isDark = document.body.classList.contains('dark-mode');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
     const labelColor = isDark ? '#7a83a0' : '#8892a4';
-    const barActive  = isDark ? '#5b8cff' : '#3b82f6';
+    const barActive = isDark ? '#5b8cff' : '#3b82f6';
     const barDefault = isDark ? 'rgba(91,140,255,0.2)' : '#dbeafe';
 
     this.weekChart = new Chart(canvas, {
@@ -305,11 +312,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   fmt(value: any): string { return Number(value || 0).toFixed(2); }
 
   fmtTxDate(date: string): string {
-    const d         = new Date(date);
-    const today     = new Date();
+    const d = new Date(date);
+    const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-    if (d.toDateString() === today.toDateString())     return 'Today';
+    if (d.toDateString() === today.toDateString()) return 'Today';
     if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   }
