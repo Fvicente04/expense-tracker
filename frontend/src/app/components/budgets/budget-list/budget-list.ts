@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { NavbarComponent } from '../../layout/navbar/navbar';
 import { BudgetService } from '../../../services/budget';
 import { CategoryService } from '../../../services/category';
@@ -49,7 +48,6 @@ export class BudgetListComponent implements OnInit {
   constructor(
     private budgetService: BudgetService,
     private categoryService: CategoryService,
-    private router: Router,
     private fb: FormBuilder
   ) {
     const today = new Date();

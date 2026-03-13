@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../layout/navbar/navbar';
@@ -39,11 +39,10 @@ export interface Scenario {
   templateUrl: './reports-view.html',
   styleUrl: './reports-view.css'
 })
-export class ReportsViewComponent implements OnInit, AfterViewInit {
+export class ReportsViewComponent implements OnInit {
   filterForm!: FormGroup;
   isLoading = false;
   errorMessage = '';
-  viewInitialized = false;
 
   summary: ReportSummary = { totalIncome: 0, totalExpense: 0, balance: 0, transactionCount: 0 };
   previousSummary: ReportSummary = { totalIncome: 0, totalExpense: 0, balance: 0, transactionCount: 0 };
@@ -83,10 +82,8 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef
   ) { }
 
-  ngOnInit(): void { this.initForm(); }
-
-  ngAfterViewInit(): void {
-    this.viewInitialized = true;
+  ngOnInit(): void {
+    this.initForm();
     setTimeout(() => this.loadReports(), 100);
   }
 
@@ -113,7 +110,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
   }
 
   loadReports(): void {
-    if (!this.viewInitialized) return;
     this.isLoading = true;
     this.errorMessage = '';
     this.quickInsights = [];
@@ -234,19 +230,17 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       } else {
         const recInc = this.projectRecurringForMonth(recurring, year, m, 'income');
         const recExp = this.projectRecurringForMonth(recurring, year, m, 'expense');
-        const projInc = recInc;
-        const projExp = recExp;
-        const bal = projInc - projExp;
+        const bal = recInc - recExp;
         cum += bal;
 
-        const simIncome = projInc + incDelta;
-        const simExp2 = projExp + expDelta;
+        const simIncome = recInc + incDelta;
+        const simExp2 = recExp + expDelta;
         const simBal = simIncome - simExp2;
         simCum += simBal;
 
         months.push({
           label: names[m], year, month: m,
-          projectedIncome: projInc, projectedExpenses: projExp,
+          projectedIncome: recInc, projectedExpenses: recExp,
           balance: bal, cumulative: cum, isCurrentMonth: false, isPast: false
         });
         simMonths.push({
@@ -281,7 +275,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       }, 0);
   }
 
-
   private actualMonthData(transactions: Transaction[], year: number, month: number): { income: number; expenses: number } {
     const t = transactions.filter(t => {
       const d = new Date(t.date);
@@ -291,15 +284,6 @@ export class ReportsViewComponent implements OnInit, AfterViewInit {
       income: t.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0),
       expenses: t.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
     };
-  }
-
-  private recurringBeforeToday(transactions: Transaction[], year: number, month: number, type: 'income' | 'expense', today: Date): number {
-    return transactions
-      .filter(t => {
-        const d = new Date(t.date);
-        return t.type === type && d.getFullYear() === year && d.getMonth() === month && d <= today;
-      })
-      .reduce((s, t) => s + Number(t.amount), 0);
   }
 
   get displayMonths(): ForecastMonth[] {
