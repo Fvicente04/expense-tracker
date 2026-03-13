@@ -161,8 +161,6 @@ export class ReportsViewComponent implements OnInit {
     const year = this.forecastYear;
     const month = today.getMonth();
 
-    const past = this.allTransactions.filter(t => new Date(t.date) <= today);
-
     const allRecurring = this.allTransactions.filter(t => (t as any).isRecurring || (t as any).is_recurring);
     const recurringMap = new Map<string, Transaction>();
     allRecurring.forEach(t => {
@@ -186,46 +184,38 @@ export class ReportsViewComponent implements OnInit {
       const isPast = m < month;
       const isCurrent = m === month;
 
-      if (isPast) {
-        const actual = this.actualMonthData(past, year, m);
+      if (isPast || isCurrent) {
+        const actual = this.actualMonthData(this.allTransactions, year, m);
         const bal = actual.income - actual.expenses;
         cum += bal;
-        simCum += bal;
-        const base: ForecastMonth = {
-          label: names[m], year, month: m,
-          projectedIncome: actual.income, projectedExpenses: actual.expenses,
-          balance: bal, cumulative: cum, isCurrentMonth: false, isPast: true
-        };
-        months.push(base);
-        simMonths.push({ ...base, cumulative: simCum });
 
-      } else if (isCurrent) {
-        const actualIncome = past.filter(t => { const d = new Date(t.date); return t.type === 'income' && d.getFullYear() === year && d.getMonth() === m && !(t as any).isRecurring && !(t as any).is_recurring; }).reduce((s, t) => s + Number(t.amount), 0);
-        const actualExpenses = past.filter(t => { const d = new Date(t.date); return t.type === 'expense' && d.getFullYear() === year && d.getMonth() === m && !(t as any).isRecurring && !(t as any).is_recurring; }).reduce((s, t) => s + Number(t.amount), 0);
-        const recInc = this.projectRecurringForMonth(recurring, year, m, 'income');
-        const recExp = this.projectRecurringForMonth(recurring, year, m, 'expense');
-        const totalIncome = actualIncome + recInc;
-        const totalExp = actualExpenses + recExp;
-        const bal = totalIncome - totalExp;
-        cum += bal;
-
-        const daysInMonth = new Date(year, m + 1, 0).getDate();
-        const remaining = Math.max(0, (daysInMonth - today.getDate()) / daysInMonth);
-        const simIncome = totalIncome + (incDelta * remaining);
-        const simExp = totalExp + (expDelta * remaining);
-        const simBal = simIncome - simExp;
-        simCum += simBal;
-
-        months.push({
-          label: names[m], year, month: m,
-          projectedIncome: totalIncome, projectedExpenses: totalExp,
-          balance: bal, cumulative: cum, isCurrentMonth: true, isPast: false
-        });
-        simMonths.push({
-          label: names[m], year, month: m,
-          projectedIncome: simIncome, projectedExpenses: simExp,
-          balance: simBal, cumulative: simCum, isCurrentMonth: true, isPast: false
-        });
+        if (isCurrent) {
+          const daysInMonth = new Date(year, m + 1, 0).getDate();
+          const remaining = Math.max(0, (daysInMonth - today.getDate()) / daysInMonth);
+          const simIncome = actual.income + (incDelta * remaining);
+          const simExp = actual.expenses + (expDelta * remaining);
+          const simBal = simIncome - simExp;
+          simCum += simBal;
+          months.push({
+            label: names[m], year, month: m,
+            projectedIncome: actual.income, projectedExpenses: actual.expenses,
+            balance: bal, cumulative: cum, isCurrentMonth: true, isPast: false
+          });
+          simMonths.push({
+            label: names[m], year, month: m,
+            projectedIncome: simIncome, projectedExpenses: simExp,
+            balance: simBal, cumulative: simCum, isCurrentMonth: true, isPast: false
+          });
+        } else {
+          simCum += bal;
+          const base: ForecastMonth = {
+            label: names[m], year, month: m,
+            projectedIncome: actual.income, projectedExpenses: actual.expenses,
+            balance: bal, cumulative: cum, isCurrentMonth: false, isPast: true
+          };
+          months.push(base);
+          simMonths.push({ ...base, cumulative: simCum });
+        }
 
       } else {
         const recInc = this.projectRecurringForMonth(recurring, year, m, 'income');
