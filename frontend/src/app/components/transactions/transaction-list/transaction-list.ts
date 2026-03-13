@@ -233,7 +233,7 @@ export class TransactionListComponent implements OnInit {
         count++;
       }
       const fmt = endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      return `Every ${label[freq]} Â· ${count} occurrence${count !== 1 ? 's' : ''} until ${fmt}`;
+      return `Every ${label[freq]} · ${count} occurrence${count !== 1 ? 's' : ''} until ${fmt}`;
     }
 
     return `Every ${label[freq]}, indefinitely (up to 60 occurrences)`;
