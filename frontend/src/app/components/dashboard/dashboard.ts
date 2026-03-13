@@ -5,7 +5,7 @@ import { NavbarComponent } from '../layout/navbar/navbar';
 import { TransactionService } from '../../services/transaction';
 import { BudgetService } from '../../services/budget';
 import { ReportService } from '../../services/report';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth';
 import { Transaction } from '../../models/transaction';
 import { Budget } from '../../models/budget';
 import { Chart, registerables } from 'chart.js';

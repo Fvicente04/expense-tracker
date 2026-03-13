@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../services/auth';
 
 function pwdMatch(group: AbstractControl): ValidationErrors | null {
   const pw  = group.get('password')?.value;
@@ -16,6 +16,7 @@ function pwdMatch(group: AbstractControl): ValidationErrors | null {
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
+
 export class RegisterComponent {
   form: FormGroup;
   loading      = false;

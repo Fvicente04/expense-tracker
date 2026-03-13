@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../../services/auth.service';
+import { AuthService } from '../../../services/auth';
 import { ThemeService } from '../../../services/theme';
 
 @Component({
@@ -12,6 +12,7 @@ import { ThemeService } from '../../../services/theme';
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
+
 export class NavbarComponent implements OnInit, OnDestroy {
   isExpanded = false;
   mobileOpen = false;
