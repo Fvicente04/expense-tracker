@@ -2,8 +2,6 @@ export interface Budget {
   id: string;
   userId: string;
   categoryId: string;
-  user_id?: string;
-  category_id?: string;
   amount: number;
   spent: number;
   month: number;
