@@ -156,7 +156,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
           const currentMonthTxs = all.filter((t: Transaction) => {
             const d = new Date(t.date).toISOString().split('T')[0];
-            return d >= start && d <= todayStr;
+            return d >= start && d <= end;
           });
 
           this.totalIncome = currentMonthTxs
@@ -178,6 +178,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           const prevIncome = prevTxs
             .filter((t: Transaction) => t.type === 'income')
             .reduce((s: number, t: Transaction) => s + Number(t.amount || 0), 0);
+
           const prevExpense = prevTxs
             .filter((t: Transaction) => t.type === 'expense')
             .reduce((s: number, t: Transaction) => s + Math.abs(Number(t.amount || 0)), 0);
@@ -185,11 +186,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.incomeVsLastMonth = this.totalIncome - prevIncome;
           this.expenseVsLastMonth = this.totalExpense - prevExpense;
 
-          this.recentTransactions = [...currentMonthTxs]
+          const pastTxs = currentMonthTxs.filter((t: Transaction) => {
+            return new Date(t.date).toISOString().split('T')[0] <= todayStr;
+          });
+
+          this.recentTransactions = [...pastTxs]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 5);
 
-          this.spentToday = currentMonthTxs
+          this.spentToday = pastTxs
             .filter((t: Transaction) =>
               new Date(t.date).toISOString().split('T')[0] === todayStr && t.type === 'expense'
             )
@@ -197,7 +202,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
           const weekly = [0, 0, 0, 0, 0, 0, 0];
           const todayIdx = (today.getDay() + 6) % 7;
-          currentMonthTxs.forEach((t: Transaction) => {
+          pastTxs.forEach((t: Transaction) => {
             if (t.type !== 'expense') return;
             const diff = Math.floor((today.getTime() - new Date(t.date).getTime()) / 86400000);
             if (diff >= 0 && diff < 7) {

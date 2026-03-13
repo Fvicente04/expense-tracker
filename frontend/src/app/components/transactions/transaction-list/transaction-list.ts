@@ -28,7 +28,7 @@ export class TransactionListComponent implements OnInit {
 
   selected = new Set<string>();
   bulkDeleting = false;
-  showFuture = false;
+  showFuture = true;
 
   filters = { type: '', categoryId: '', startDate: '', endDate: '' };
 
@@ -56,6 +56,7 @@ export class TransactionListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.initMonthFilter();
     this.loadCategories();
     this.loadTransactions();
 
@@ -65,6 +66,14 @@ export class TransactionListComponent implements OnInit {
         this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
       }
     });
+  }
+
+  private initMonthFilter(): void {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    this.filters.startDate = firstDay.toISOString().split('T')[0];
+    this.filters.endDate = lastDay.toISOString().split('T')[0];
   }
 
   loadCategories(): void {
@@ -113,7 +122,8 @@ export class TransactionListComponent implements OnInit {
 
   clearFilters(): void {
     this.filters = { type: '', categoryId: '', startDate: '', endDate: '' };
-    this.showFuture = false;
+    this.initMonthFilter();
+    this.showFuture = true;
     this.applyFilters();
   }
 
@@ -233,7 +243,7 @@ export class TransactionListComponent implements OnInit {
         count++;
       }
       const fmt = endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      return `Every ${label[freq]} · ${count} occurrence${count !== 1 ? 's' : ''} until ${fmt}`;
+      return `Every ${label[freq]} Â· ${count} occurrence${count !== 1 ? 's' : ''} until ${fmt}`;
     }
 
     return `Every ${label[freq]}, indefinitely (up to 60 occurrences)`;
