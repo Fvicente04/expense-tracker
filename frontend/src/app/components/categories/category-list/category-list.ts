@@ -29,6 +29,7 @@ export class CategoryListComponent implements OnInit {
   customColor = '#667eea';
   activeIconGroup = 'Finance';
   searchQuery = '';
+  typeFilter: 'all' | 'expense' | 'income' = 'all';
 
   iconGroups = [
     { label: 'Finance',       icons: ['\u{1F4B0}','\u{1F4B5}','\u{1F4B8}','\u{1F4B3}','\u{1F3E6}','\u{1F4C8}','\u{1F4C9}','\u{1FA99}','\u{1F4CA}','\u{1F48E}'] },
