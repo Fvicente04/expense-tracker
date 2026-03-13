@@ -10,8 +10,6 @@ export const routes: Routes = [
   { path: 'transactions/new',  canActivate: [authGuard], loadComponent: () => import('./components/transactions/transaction-form/transaction-form').then(m => m.TransactionFormComponent) },
   { path: 'transactions/edit/:id', canActivate: [authGuard], loadComponent: () => import('./components/transactions/transaction-form/transaction-form').then(m => m.TransactionFormComponent) },
   { path: 'categories',        canActivate: [authGuard], loadComponent: () => import('./components/categories/category-list/category-list').then(m => m.CategoryListComponent) },
-  { path: 'categories/new',    canActivate: [authGuard], loadComponent: () => import('./components/categories/category-form/category-form').then(m => m.CategoryFormComponent) },
-  { path: 'categories/edit/:id', canActivate: [authGuard], loadComponent: () => import('./components/categories/category-form/category-form').then(m => m.CategoryFormComponent) },
   { path: 'budgets',           canActivate: [authGuard], loadComponent: () => import('./components/budgets/budget-list/budget-list').then(m => m.BudgetListComponent) },
   { path: 'budgets/new',       canActivate: [authGuard], loadComponent: () => import('./components/budgets/budget-form/budget-form').then(m => m.BudgetFormComponent) },
   { path: 'budgets/edit/:id',  canActivate: [authGuard], loadComponent: () => import('./components/budgets/budget-form/budget-form').then(m => m.BudgetFormComponent) },

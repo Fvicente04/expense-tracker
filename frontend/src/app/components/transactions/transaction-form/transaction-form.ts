@@ -13,6 +13,7 @@ import { NavbarComponent } from '../../layout/navbar/navbar';
   templateUrl: './transaction-form.html',
   styleUrl: './transaction-form.css'
 })
+
 export class TransactionFormComponent implements OnInit {
   form!: FormGroup;
   categories: Category[] = [];

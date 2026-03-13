@@ -16,6 +16,7 @@ interface Month { value: number; label: string; }
   templateUrl: './budget-list.html',
   styleUrl: './budget-list.css'
 })
+
 export class BudgetListComponent implements OnInit {
   budgets: Budget[] = [];
   categories: Category[] = [];
