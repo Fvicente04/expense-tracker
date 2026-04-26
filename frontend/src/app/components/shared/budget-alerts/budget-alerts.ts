@@ -13,10 +13,9 @@ interface BudgetAlert {
 
 @Component({
   selector: 'app-budget-alerts',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './budget-alerts.html',
-  styleUrls: ['./budget-alerts.css']
+  styleUrl: './budget-alerts.css'   // singular
 })
 export class BudgetAlertsComponent implements OnInit {
   alerts: BudgetAlert[] = [];
