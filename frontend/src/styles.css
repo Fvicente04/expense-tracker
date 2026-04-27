@@ -386,6 +386,15 @@ body.dark-mode .transaction-table td  { color: #f0f2f8 !important; }
 body.dark-mode .section-card p,
 body.dark-mode .section-card span:not(.badge):not(.tag):not(.amount):not(.type-badge) { color: #c8cfe0; }
 
+body.dark-mode .dashboard-content {
+  --c-bg:       #0f1117;
+  --c-surface:  #181c26;
+  --c-surface2: #1e2235;
+  --c-border:   rgba(255,255,255,0.07);
+  --c-text:     #f0f2f8;
+  --c-muted:    #7a83a0;
+}
+
 
 
 @media (max-width: 768px) {
