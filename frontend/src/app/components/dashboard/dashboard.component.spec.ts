@@ -6,7 +6,7 @@ import { DashboardComponent } from './dashboard';
 import { TransactionService } from '../../services/transaction';
 import { BudgetService } from '../../services/budget';
 import { ReportService } from '../../services/report';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../services/auth';
 
 const mockRouter             = { navigate: jasmine.createSpy('navigate') };
 const mockAuthService        = { currentUser$: of({ name: 'Felipe', email: 'felipe@test.com' }) };
