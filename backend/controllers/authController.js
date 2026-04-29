@@ -2,10 +2,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set');
+
 const signToken = (user) =>
   jwt.sign(
     { id: user.id, email: user.email },
-    process.env.JWT_SECRET || 'fallback-secret-key',
+    process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
 
