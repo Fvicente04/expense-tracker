@@ -55,11 +55,7 @@ const Category = sequelize.define('Category', {
       }
     }
   },
-  isDefault: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-    field: 'is_default'
-  }
+
 }, {
   tableName: 'categories',
   timestamps: true,

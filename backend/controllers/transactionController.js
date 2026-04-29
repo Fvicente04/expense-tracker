@@ -160,16 +160,3 @@ exports.deleteTransaction = async (req, res) => {
     res.status(500).json({ message: 'Error deleting transaction' });
   }
 };
-
-exports.bulkDeleteTransactions = async (req, res) => {
-  try {
-    const { ids } = req.body;
-    if (!ids || !Array.isArray(ids) || ids.length === 0)
-      return res.status(400).json({ message: 'No transaction IDs provided' });
-
-    const count = await Transaction.destroy({ where: { id: ids, userId: req.user.id } });
-    res.json({ message: `${count} transactions deleted` });
-  } catch (err) {
-    res.status(500).json({ message: 'Error deleting transactions' });
-  }
-};
