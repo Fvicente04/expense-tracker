@@ -4,14 +4,17 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } 
 import { NavbarComponent } from '../../layout/navbar/navbar';
 import { BudgetService } from '../../../services/budget';
 import { CategoryService } from '../../../services/category';
+import { LanguageService } from '../../../services/language.service';
+import { TranslatePipe } from '../../../pipes/translate.pipe';
 import { Budget } from '../../../models/budget';
 import { Category } from '../../../models/category';
+import { LucideIconComponent, LUCIDE_ICON_NAMES } from '../../shared/lucide-icon';
 
-interface Month { value: number; label: string; }
+interface Month { value: number; }
 
 @Component({
   selector: 'app-budget-list',
-  imports: [CommonModule, NavbarComponent, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, NavbarComponent, ReactiveFormsModule, FormsModule, TranslatePipe, LucideIconComponent],
   templateUrl: './budget-list.html',
   styleUrl: './budget-list.css'
 })
@@ -28,27 +31,20 @@ export class BudgetListComponent implements OnInit {
   showModal = false;
   editMode = false;
   editingId = '';
+  isRollingOver = false;
   form: FormGroup;
 
   months: Month[] = [
-    { value: 1,  label: 'January'   },
-    { value: 2,  label: 'February'  },
-    { value: 3,  label: 'March'     },
-    { value: 4,  label: 'April'     },
-    { value: 5,  label: 'May'       },
-    { value: 6,  label: 'June'      },
-    { value: 7,  label: 'July'      },
-    { value: 8,  label: 'August'    },
-    { value: 9,  label: 'September' },
-    { value: 10, label: 'October'   },
-    { value: 11, label: 'November'  },
-    { value: 12, label: 'December'  },
+    { value: 1 }, { value: 2 }, { value: 3 }, { value: 4 },
+    { value: 5 }, { value: 6 }, { value: 7 }, { value: 8 },
+    { value: 9 }, { value: 10 }, { value: 11 }, { value: 12 },
   ];
 
   constructor(
     private budgetService: BudgetService,
     private categoryService: CategoryService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    public lang: LanguageService
   ) {
     const today = new Date();
     this.selectedMonth = today.getMonth() + 1;
@@ -58,7 +54,8 @@ export class BudgetListComponent implements OnInit {
       categoryId: ['', Validators.required],
       amount:     ['', [Validators.required, Validators.min(0)]],
       month:      [this.selectedMonth, Validators.required],
-      year:       [this.selectedYear,  Validators.required]
+      year:       [this.selectedYear,  Validators.required],
+      recurring:  [false]
     });
   }
 
@@ -88,7 +85,13 @@ export class BudgetListComponent implements OnInit {
   }
 
   monthName(): string {
-    return this.months.find(m => m.value === this.selectedMonth)?.label ?? '';
+    const locale = this.lang.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
+    return new Date(this.selectedYear, this.selectedMonth - 1).toLocaleString(locale, { month: 'long' });
+  }
+
+  localeMonthName(monthValue: number): string {
+    const locale = this.lang.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
+    return new Date(this.selectedYear, monthValue - 1).toLocaleString(locale, { month: 'long' });
   }
 
   changeMonth(dir: number): void {
@@ -116,10 +119,10 @@ export class BudgetListComponent implements OnInit {
 
   statusText(budget: Budget): string {
     const p = this.progressPct(budget);
-    if (p >= 100) return 'Exceeded';
-    if (p >= 80)  return 'Warning';
-    if (p >= 60)  return 'Moderate';
-    return 'Healthy';
+    if (p >= 100) return 'budgets.statusExceeded';
+    if (p >= 80)  return 'budgets.statusWarning';
+    if (p >= 60)  return 'budgets.statusModerate';
+    return 'budgets.statusHealthy';
   }
 
   isCurrent(): boolean {
@@ -187,7 +190,24 @@ export class BudgetListComponent implements OnInit {
       categoryId: budget.categoryId,
       amount:     budget.amount,
       month:      budget.month,
-      year:       budget.year
+      year:       budget.year,
+      recurring:  budget.recurring ?? false
+    });
+  }
+
+  recurringAvailable(): number {
+    if (this.filteredBudgets().length > 0) return 0;
+    let prevMonth = this.selectedMonth - 1, prevYear = this.selectedYear;
+    if (prevMonth < 1) { prevMonth = 12; prevYear = this.selectedYear - 1; }
+    return this.budgets.filter(b => b.month === prevMonth && b.year === prevYear && b.recurring).length;
+  }
+
+  rollover(): void {
+    if (this.isRollingOver) return;
+    this.isRollingOver = true;
+    this.budgetService.rollover(this.selectedMonth, this.selectedYear).subscribe({
+      next: () => { this.isRollingOver = false; this.load(); },
+      error: () => { this.isRollingOver = false; }
     });
   }
 
@@ -220,4 +240,5 @@ export class BudgetListComponent implements OnInit {
   }
 
   fmt(value: any): string { return (Number(value) || 0).toFixed(2); }
+  isLucideIcon(icon: string): boolean { return LUCIDE_ICON_NAMES.has(icon); }
 }

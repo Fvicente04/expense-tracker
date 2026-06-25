@@ -481,25 +481,68 @@ body.dark-mode .dashboard-content .budget-alert { color: #fb923c; }
   width: 100%;
   margin-top: 16px;
   padding: 12px 22px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1.5px solid var(--c-border);
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(102,126,234,0.35);
+  transition: all 0.18s;
   letter-spacing: 0.2px;
 }
 
-.add-btn:hover  { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(102,126,234,0.45); }
-.add-btn:active { transform: translateY(0);    box-shadow: 0 2px 8px rgba(102,126,234,0.3);  }
-body.dark-mode .add-btn { box-shadow: 0 2px 12px rgba(102,126,234,0.25); }
+.add-btn:hover  { border-color: #667eea; color: #667eea; background: rgba(102,126,234,0.06); }
+.add-btn:active { opacity: 0.9; }
+
+/* ── MIDDLE ROW (Goals + Card Alerts) ── */
+.dashboard-content .middle-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--rhythm);
+}
+
+/* Goals */
+.dashboard-content .goal-list { display: flex; flex-direction: column; gap: 16px; }
+.dashboard-content .goal-item { display: flex; flex-direction: column; gap: 6px; }
+.dashboard-content .goal-top  { display: flex; justify-content: space-between; align-items: center; }
+.dashboard-content .goal-name {
+  font-size: 13px; font-weight: 600; color: var(--c-text);
+  display: flex; align-items: center; gap: 8px;
+}
+.dashboard-content .goal-icon { font-size: 16px; line-height: 1; }
+.dashboard-content .goal-pct  { font-size: 12px; font-weight: 700; color: var(--c-blue); }
+.dashboard-content .goal-meta {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--c-muted); font-weight: 500;
+}
+.dashboard-content .goal-overdue { color: var(--c-red) !important; }
+
+/* Credit card alerts */
+.dashboard-content .cc-alert-list { display: flex; flex-direction: column; gap: 8px; }
+.dashboard-content .cc-alert-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: var(--c-surface2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+}
+.dashboard-content .cc-color-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.dashboard-content .cc-alert-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.dashboard-content .cc-alert-name { font-size: 13px; font-weight: 600; color: var(--c-text); }
+.dashboard-content .cc-alert-sub  { font-size: 11px; color: var(--c-muted); font-weight: 500; }
+.dashboard-content .cc-alert-sub.util { color: var(--c-yellow); }
+.dashboard-content .cc-alert-badge {
+  padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+}
+.dashboard-content .cc-alert-badge.due  { background: var(--c-red-dim);    color: var(--c-red);    }
+.dashboard-content .cc-alert-badge.util { background: var(--c-yellow-dim); color: var(--c-yellow); }
 
 @media (max-width: 1100px) {
   .dashboard-content .bottom-grid { grid-template-columns: 1fr; }

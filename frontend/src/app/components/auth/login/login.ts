@@ -1,29 +1,40 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth';
+import { LanguageService } from '../../../services/language.service';
+import { TranslatePipe } from '../../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   form: FormGroup;
   loading = false;
   error   = '';
+  sessionExpired = false;
   showPwd = false;
 
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
+    public lang: LanguageService
   ) {
     this.form = this.fb.group({
       email:    ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.sessionExpired = params['reason'] === 'session_expired';
     });
   }
 
@@ -32,9 +43,9 @@ export class LoginComponent {
   fieldErr(field: string): string | null {
     const ctrl = this.form.get(field);
     if (!ctrl?.touched || ctrl.valid) return null;
-    if (ctrl.errors?.['required'])  return `${field === 'email' ? 'Email' : 'Password'} is required`;
-    if (ctrl.errors?.['email'])     return 'Please enter a valid email';
-    if (ctrl.errors?.['minlength']) return 'Password must be at least 6 characters';
+    if (ctrl.errors?.['required'])  return field === 'email' ? 'val.emailRequired' : 'val.passwordRequired';
+    if (ctrl.errors?.['email'])     return 'val.emailInvalid';
+    if (ctrl.errors?.['minlength']) return 'val.passwordMin';
     return null;
   }
 
@@ -48,7 +59,7 @@ export class LoginComponent {
     this.auth.login(this.form.value).subscribe({
       next:  () => this.router.navigate(['/dashboard']),
       error: (err: any) => {
-        this.error   = err.error?.message || 'Invalid email or password';
+        this.error   = err.status === 401 ? 'auth.invalidCredentials' : 'auth.loginError';
         this.loading = false;
       }
     });

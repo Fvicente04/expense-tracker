@@ -6,16 +6,23 @@ import { TransactionService } from '../../services/transaction';
 import { BudgetService } from '../../services/budget';
 import { ReportService } from '../../services/report';
 import { AuthService } from '../../services/auth';
+import { GoalService } from '../../services/goal';
+import { CreditCardService } from '../../services/credit-card';
+import { LanguageService } from '../../services/language.service';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 import { Transaction } from '../../models/transaction';
 import { Budget } from '../../models/budget';
+import { Goal } from '../../models/goal';
+import { CreditCard } from '../../models/credit-card';
 import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
+import { LucideIconComponent, LUCIDE_ICON_NAMES } from '../shared/lucide-icon';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterModule, NavbarComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, TranslatePipe, LucideIconComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -24,6 +31,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private subs: Subscription[] = [];
 
   userName = '';
+  currencySymbol = '€';
 
   totalIncome = 0;
   totalExpense = 0;
@@ -49,6 +57,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   alertBudget: Budget | null = null;
   weeklySpending: number[] = [0, 0, 0, 0, 0, 0, 0];
 
+  activeGoals: Goal[] = [];
+  alertCards: CreditCard[] = [];
+
   currentMonthLabel = '';
   todayLabel = '';
   dayOfMonth = 0;
@@ -61,7 +72,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private budgetService: BudgetService,
     private reportService: ReportService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private goalService: GoalService,
+    private creditCardService: CreditCardService,
+    private cdr: ChangeDetectorRef,
+    public lang: LanguageService
   ) { }
 
   ngOnInit(): void {
@@ -70,6 +84,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.authService.currentUser$.subscribe(user => {
         if (user) {
           this.userName = (user.name || user.email || '').split(' ')[0] || 'there';
+          if (user.currency) this.currencySymbol = this.getCurrencySymbol(user.currency);
           this.cdr.detectChanges();
         }
       })
@@ -83,6 +98,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
     if (this.weekChart) this.weekChart.destroy();
+  }
+
+  private getCurrencySymbol(code: string): string {
+    const map: Record<string, string> = { EUR: '€', USD: '$', GBP: '£', BRL: 'R$' };
+    return map[code] ?? code;
   }
 
   private initDate(): void {
@@ -115,7 +135,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const prevStart = this.fmtDate(new Date(today.getFullYear(), today.getMonth() - 1, 1));
     const prevEnd = this.fmtDate(new Date(today.getFullYear(), today.getMonth(), 0));
 
-    let pending = 5;
+    let pending = 7;
     const done = () => {
       if (--pending === 0) {
         this.calcMetrics();
@@ -233,19 +253,41 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         error: () => done()
       })
     );
+
+    this.subs.push(
+      this.goalService.getAll().subscribe({
+        next: (goals) => {
+          this.activeGoals = goals
+            .filter(g => g.savedAmount < g.targetAmount)
+            .slice(0, 3);
+          done();
+        },
+        error: () => done()
+      })
+    );
+
+    this.subs.push(
+      this.creditCardService.getAll().subscribe({
+        next: (cards) => {
+          this.alertCards = cards.filter(c => c.isActive && (c.dueAlert || c.utilizationAlert));
+          done();
+        },
+        error: () => done()
+      })
+    );
   }
 
   private calcMetrics(): void {
     this.safeToSpend = this.daysRemaining > 0 ? this.balance / this.daysRemaining : 0;
     if (this.balance < 0 || this.safeToSpend < 0) {
       this.financialStatus = 'danger';
-      this.statusLabel = 'Over budget';
+      this.statusLabel = 'dashboard.statusOver';
     } else if (this.alertBudget !== null) {
       this.financialStatus = 'warning';
-      this.statusLabel = 'Watch spending';
+      this.statusLabel = 'dashboard.statusWatch';
     } else {
       this.financialStatus = 'good';
-      this.statusLabel = 'On track';
+      this.statusLabel = 'dashboard.statusOnTrack';
     }
   }
 
@@ -304,30 +346,42 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: (ctx: any) => `€${Number(ctx.raw).toFixed(2)}` } }
+          tooltip: { callbacks: { label: (ctx: any) => `${this.currencySymbol}${Number(ctx.raw).toFixed(2)}` } }
         },
         scales: {
           x: { grid: { display: false }, ticks: { color: labelColor, font: { size: 11 } } },
-          y: { grid: { color: gridColor }, ticks: { color: labelColor, font: { size: 11 }, callback: (v: any) => `€${v}` }, beginAtZero: true }
+          y: { grid: { color: gridColor }, ticks: { color: labelColor, font: { size: 11 }, callback: (v: any) => `${this.currencySymbol}${v}` }, beginAtZero: true }
         }
       }
     });
   }
 
+  goalPct(goal: Goal): number {
+    if (!goal.targetAmount) return 0;
+    return Math.min((goal.savedAmount / goal.targetAmount) * 100, 100);
+  }
+
+  goalDaysLeft(goal: Goal): number | null {
+    if (!goal.deadline) return null;
+    return Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / 86400000);
+  }
+
   fmt(value: any): string { return Number(value || 0).toFixed(2); }
+  isLucideIcon(icon: string): boolean { return LUCIDE_ICON_NAMES.has(icon); }
 
   fmtTxDate(date: string): string {
     const d = new Date(date);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
-    if (d.toDateString() === today.toDateString()) return 'Today';
-    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    if (d.toDateString() === today.toDateString()) return this.lang.t('common.today');
+    if (d.toDateString() === yesterday.toDateString()) return this.lang.t('common.yesterday');
+    const locale = this.lang.currentLang === 'pt-BR' ? 'pt-BR' : 'en-GB';
+    return d.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
   }
 
   fmtDelta(value: number): string {
-    return `${value >= 0 ? '+' : '–'}€${Math.abs(value).toFixed(0)}`;
+    return `${value >= 0 ? '+' : '–'}${this.currencySymbol}${Math.abs(value).toFixed(0)}`;
   }
 
   goTo(path: string, queryParams?: Record<string, any>): void {

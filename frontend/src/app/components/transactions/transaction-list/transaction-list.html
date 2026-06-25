@@ -3,14 +3,41 @@
   <div class="page-header">
     <div class="header-content">
       <div class="header-left">
-        <h1 class="page-title">Transactions</h1>
+        <h1 class="page-title">{{ 'transactions.title' | translate }}</h1>
       </div>
       <div class="header-actions">
-        <button class="btn-primary" (click)="openModal()">
+        <div class="actions-dropdown" [class.open]="showActionsDropdown">
+          <button class="btn-outline" (click)="toggleActionsDropdown()" [disabled]="isLoading">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+              <circle cx="12" cy="19" r="1.5" fill="currentColor"/>
+            </svg>
+            {{ 'transactions.actions' | translate }}
+            <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item" (click)="triggerImport(); closeActionsDropdown()" [disabled]="importLoading || isLoading">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ (importLoading ? 'transactions.processing' : 'transactions.importAib') | translate }}
+            </button>
+            <button class="dropdown-item" (click)="exportCSV(); closeActionsDropdown()" [disabled]="isLoading">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ 'transactions.exportCsv' | translate }}
+            </button>
+          </div>
+        </div>
+        <button class="btn-outline" (click)="openModal()">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
           </svg>
-          Add Transaction
+          {{ 'transactions.addTransaction' | translate }}
         </button>
       </div>
     </div>
@@ -20,76 +47,102 @@
 
     <div class="filters-card">
       <div class="filters-top">
-        <h3>Filters</h3>
+        <h3>{{ 'transactions.filters' | translate }}</h3>
         <div class="form-actions">
           <button class="btn-secondary" (click)="clearFilters()" style="padding: 6px 14px; font-size: 13px;">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
-            Clear
+            {{ 'transactions.clear' | translate }}
           </button>
         </div>
       </div>
 
+      <div class="search-bar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input type="text" [(ngModel)]="filters.search" (ngModelChange)="onSearchChange()"
+          [placeholder]="'transactions.search' | translate" class="search-input" />
+        @if (filters.search) {
+          <button class="search-clear" (click)="filters.search=''; applyFilters()">×</button>
+        }
+      </div>
+
       <div class="form-grid">
         <div class="form-group">
-          <label>Type</label>
+          <label>{{ 'transactions.type' | translate }}</label>
           <select [(ngModel)]="filters.type" (change)="applyFilters()">
-            <option value="">All Types</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
+            <option value="">{{ 'transactions.allTypes' | translate }}</option>
+            <option value="income">{{ 'transactions.income' | translate }}</option>
+            <option value="expense">{{ 'transactions.expense' | translate }}</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Category</label>
+          <label>{{ 'transactions.category' | translate }}</label>
           <select [(ngModel)]="filters.categoryId" (change)="applyFilters()">
-            <option value="">All Categories</option>
-            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+            <option value="">{{ 'transactions.allCategories' | translate }}</option>
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
           </select>
         </div>
 
+        @if (bankConnections.length > 0) {
+          <div class="form-group">
+            <label>Account</label>
+            <select [(ngModel)]="filters.bankConnectionId" (change)="applyFilters()">
+              <option value="">All accounts</option>
+              @for (conn of bankConnections; track conn.id) {
+                <option [value]="conn.id">{{ conn.displayName }}</option>
+              }
+            </select>
+          </div>
+        }
+
         <div class="form-group">
-          <label>Start Date</label>
+          <label>{{ 'transactions.startDate' | translate }}</label>
           <input type="date" [(ngModel)]="filters.startDate" (change)="applyFilters()" />
         </div>
 
         <div class="form-group">
-          <label>End Date</label>
+          <label>{{ 'transactions.endDate' | translate }}</label>
           <input type="date" [(ngModel)]="filters.endDate" (change)="applyFilters()" />
         </div>
 
-        <div class="future-toggle span-2" (click)="showFuture = !showFuture; applyFilters()">
-          <label class="toggle-switch" (click)="$event.stopPropagation()">
+        <div class="future-toggle span-2">
+          <label class="toggle-switch">
             <input type="checkbox" [checked]="showFuture" (change)="showFuture = !showFuture; applyFilters()" />
             <span class="toggle-slider"></span>
           </label>
-          <span class="future-toggle-label">Show future recurring transactions</span>
+          <span class="future-toggle-label" (click)="showFuture = !showFuture; applyFilters()">{{ 'transactions.showFuture' | translate }}</span>
         </div>
       </div>
     </div>
 
     <div class="summary-section">
       <div class="summary-item income">
-        <div class="summary-icon">&#x1F4B0;</div>
+        <div class="summary-icon"><app-lucide-icon name="trendingUp" [size]="22" [strokeWidth]="2"></app-lucide-icon></div>
         <div class="summary-info">
-          <span class="summary-label">Total Income</span>
-          <div class="summary-value">€{{ fmt(totalIncome()) }}</div>
+          <span class="summary-label">{{ 'transactions.totalIncome' | translate }}</span>
+          <div class="summary-value">{{ currencySymbol }}{{ fmt(totalIncome()) }}</div>
         </div>
       </div>
       <div class="summary-item expense">
-        <div class="summary-icon">&#x1F4B8;</div>
+        <div class="summary-icon"><app-lucide-icon name="trendingDown" [size]="22" [strokeWidth]="2"></app-lucide-icon></div>
         <div class="summary-info">
-          <span class="summary-label">Total Expenses</span>
-          <div class="summary-value">€{{ fmt(totalExpenses()) }}</div>
+          <span class="summary-label">{{ 'transactions.totalExpenses' | translate }}</span>
+          <div class="summary-value">{{ currencySymbol }}{{ fmt(totalExpenses()) }}</div>
         </div>
       </div>
       <div class="summary-item balance">
-        <div class="summary-icon">&#x2696;&#xFE0F;</div>
+        <div class="summary-icon"><app-lucide-icon name="wallet" [size]="22" [strokeWidth]="2"></app-lucide-icon></div>
         <div class="summary-info">
-          <span class="summary-label">Net Balance</span>
+          <span class="summary-label">{{ 'transactions.netBalance' | translate }}</span>
           <div class="summary-value" [style.color]="balance() >= 0 ? '#16a34a' : '#dc2626'">
-            €{{ fmt(balance()) }}
+            {{ currencySymbol }}{{ fmt(balance()) }}
           </div>
         </div>
       </div>
@@ -97,278 +150,435 @@
 
     <div class="section-card">
 
-      <div class="bulk-bar" *ngIf="selected.size > 0">
-        <span class="bulk-count">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M13.3334 4L6.00008 11.3333L2.66675 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-          {{ selected.size }} selected
-        </span>
-        <div class="bulk-actions">
-          <button class="bulk-clear-btn" (click)="clearSelection()">Clear selection</button>
-          <button class="bulk-delete-btn" (click)="deleteSelected()" [disabled]="bulkDeleting">
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z"
-                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-            {{ bulkDeleting ? 'Deleting...' : 'Delete ' + selected.size }}
-          </button>
-        </div>
-      </div>
-
-      <div *ngIf="isLoading" class="loading-container">
-        <div class="spinner"></div>
-        <p>Loading transactions...</p>
-      </div>
-
-      <div *ngIf="!isLoading && filtered.length === 0" class="empty-state">
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <path d="M32 8V56M16 16H48M16 48H48" stroke="#e8ecf1" stroke-width="4" stroke-linecap="round" />
-          <circle cx="32" cy="32" r="28" stroke="#e8ecf1" stroke-width="4" />
-        </svg>
-        <h3>No transactions found</h3>
-        <p>Add your first transaction to get started</p>
-        <button class="btn-primary" (click)="openModal()">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-          Add Transaction
-        </button>
-      </div>
-
-      <table *ngIf="!isLoading && filtered.length > 0" class="transaction-table">
-        <thead>
-          <tr>
-            <th class="col-checkbox">
-              <input type="checkbox" class="row-checkbox" [checked]="allSelected" [indeterminate]="someSelected"
-                (change)="toggleAll($event)" title="Select all" />
-            </th>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let transaction of pagedTransactions" [class.row-selected]="selected.has(transaction.id)">
-            <td class="col-checkbox">
-              <input type="checkbox" class="row-checkbox" [checked]="selected.has(transaction.id)"
-                (change)="toggleOne(transaction.id)" />
-            </td>
-            <td data-label="Date">
-              {{ fmtDate(transaction.date) }}
-              <span class="recurring-badge" *ngIf="(transaction)['isRecurring']" title="Recurring">&#x1F501;</span>
-            </td>
-            <td data-label="Category">
-              <div class="category-cell">
-                <div class="category-icon" [style.background]="catColor(transaction) + '20'">
-                  <span [style.color]="catColor(transaction)">{{ catIcon(transaction) }}</span>
-                </div>
-                <span class="category-name">{{ catName(transaction) }}</span>
-              </div>
-            </td>
-            <td data-label="Description">{{ transaction.description }}</td>
-            <td data-label="Amount">
-              <span class="amount-cell" [class.income]="transaction.type === 'income'"
-                [class.expense]="transaction.type === 'expense'">
-                {{ transaction.type === 'income' ? '+' : '–' }}€{{ fmt(transaction.amount) }}
-              </span>
-            </td>
-            <td data-label="Actions" class="actions-cell">
-              <button class="action-btn edit" (click)="editTransaction(transaction)" title="Edit">
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
-                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-              <button class="action-btn delete" (click)="deleteTransaction(transaction.id)" title="Delete">
-                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z"
-                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="pagination" *ngIf="!isLoading && filtered.length > pageSize">
-        <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ filtered.length }}</span>
-        <div class="pagination-controls">
-          <button class="page-btn prev-next" (click)="prevPage()" [disabled]="currentPage === 1">
+      @if (selected.size > 0) {
+        <div class="bulk-bar">
+          <span class="bulk-count">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              <path d="M13.3334 4L6.00008 11.3333L2.66675 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" />
             </svg>
-          </button>
-
-          <ng-container *ngFor="let p of pageNumbers">
-            <span *ngIf="p === '...'" class="page-ellipsis">...</span>
-            <button *ngIf="p !== '...'" class="page-btn" [class.active]="p === currentPage" (click)="goToPage(+p)">
-              {{ p }}
+            {{ selected.size }} {{ 'transactions.selected' | translate }}
+          </span>
+          <div class="bulk-actions">
+            <button class="bulk-clear-btn" (click)="clearSelection()">{{ 'transactions.clearSelection' | translate }}</button>
+            <button class="bulk-delete-btn" (click)="deleteSelected()" [disabled]="bulkDeleting">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z"
+                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              {{ bulkDeleting ? ('transactions.deleting' | translate) : (('transactions.delete' | translate) + ' ' + selected.size) }}
             </button>
-          </ng-container>
+          </div>
+        </div>
+      }
 
-          <button class="page-btn prev-next" (click)="nextPage()" [disabled]="currentPage === totalPages">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
+      @if (isLoading) {
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>{{ 'transactions.loading' | translate }}</p>
+        </div>
+      }
+
+      @if (!isLoading && serverTotal === 0) {
+        <div class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <path d="M32 8V56M16 16H48M16 48H48" stroke="#e8ecf1" stroke-width="4" stroke-linecap="round" />
+            <circle cx="32" cy="32" r="28" stroke="#e8ecf1" stroke-width="4" />
+          </svg>
+          <h3>{{ 'transactions.noFound' | translate }}</h3>
+          <p>{{ 'transactions.addFirst' | translate }}</p>
+          <button class="btn-primary" (click)="openModal()">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
+            {{ 'transactions.addTransaction' | translate }}
           </button>
         </div>
-      </div>
+      }
+
+      @if (!isLoading && serverTotal > 0) {
+        <table class="transaction-table">
+          <thead>
+            <tr>
+              <th class="col-checkbox">
+                <input type="checkbox" class="row-checkbox" [checked]="allSelected" [indeterminate]="someSelected"
+                  (change)="toggleAll($event)" title="Select all" />
+              </th>
+              <th>{{ 'transactions.date' | translate }}</th>
+              <th>{{ 'transactions.category' | translate }}</th>
+              <th>{{ 'transactions.description' | translate }}</th>
+              <th>{{ 'transactions.amount' | translate }} ({{ currencySymbol }})</th>
+              <th>{{ 'transactions.actions' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of pagedTransactions; track transaction.id) {
+              <tr [class.row-selected]="selected.has(transaction.id)">
+                <td class="col-checkbox">
+                  <input type="checkbox" class="row-checkbox" [checked]="selected.has(transaction.id)"
+                    (change)="toggleOne(transaction.id)" />
+                </td>
+                <td data-label="Date">
+                  {{ fmtDate(transaction.date) }}
+                  @if ((transaction)['isRecurring']) {
+                    <span class="recurring-badge" title="Recurring">&#x1F501;</span>
+                  }
+                </td>
+                <td data-label="Category">
+                  <div class="category-cell">
+                    <div class="category-icon" [style.background]="catColor(transaction) + '20'" [style.color]="catColor(transaction)">
+                      @if (isLucideIcon(catIcon(transaction))) {
+                        <app-lucide-icon [name]="catIcon(transaction)" [size]="18" [strokeWidth]="1.5"></app-lucide-icon>
+                      } @else {
+                        <span>{{ catIcon(transaction) }}</span>
+                      }
+                    </div>
+                    <span class="category-name">{{ catName(transaction) }}</span>
+                  </div>
+                </td>
+                <td data-label="Description">{{ transaction.description }}</td>
+                <td data-label="Amount">
+                  <span class="amount-cell" [class.income]="transaction.type === 'income'"
+                    [class.expense]="transaction.type === 'expense'">
+                    {{ transaction.type === 'income' ? '+' : '–' }}{{ currencySymbol }}{{ fmt(transaction.amount) }}
+                  </span>
+                </td>
+                <td data-label="Actions" class="actions-cell">
+                  <button class="action-btn edit" (click)="editTransaction(transaction)" title="Edit">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M11.3333 2.00004C11.5084 1.82494 11.716 1.68605 11.9447 1.59129C12.1735 1.49653 12.419 1.44775 12.6667 1.44775C12.9143 1.44775 13.1598 1.49653 13.3886 1.59129C13.6174 1.68605 13.8249 1.82494 14 2.00004C14.1751 2.17513 14.314 2.38268 14.4088 2.61149C14.5035 2.8403 14.5523 3.08578 14.5523 3.33337C14.5523 3.58096 14.5035 3.82644 14.4088 4.05525C14.314 4.28406 14.1751 4.49161 14 4.66671L5.00004 13.6667L1.33337 14.6667L2.33337 11L11.3333 2.00004Z"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  <button class="action-btn delete" (click)="deleteTransaction(transaction.id)" title="Delete">
+                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                      <path
+                        d="M2 4H14M5.33337 4V2.66671C5.33337 2.31309 5.47385 1.97395 5.7239 1.7239C5.97395 1.47385 6.31309 1.33337 6.66671 1.33337H9.33337C9.687 1.33337 10.0261 1.47385 10.2762 1.7239C10.5262 1.97395 10.6667 2.31309 10.6667 2.66671V4M12.6667 4V13.3334C12.6667 13.687 12.5262 14.0261 12.2762 14.2762C12.0261 14.5262 11.687 14.6667 11.3334 14.6667H4.66671C4.31309 14.6667 3.97395 14.5262 3.7239 14.2762C3.47385 14.0261 3.33337 13.687 3.33337 13.3334V4H12.6667Z"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+
+      @if (!isLoading && serverPages > 1) {
+        <div class="pagination">
+          <span class="pagination-info">{{ pageStart }}–{{ pageEnd }} of {{ serverTotal }}</span>
+          <div class="pagination-controls">
+            <button class="page-btn prev-next" (click)="prevPage()" [disabled]="currentPage === 1">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+
+            @for (p of pageNumbers; track p) {
+              @if (p === '...') {
+                <span class="page-ellipsis">...</span>
+              } @else {
+                <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(+p)">{{ p }}</button>
+              }
+            }
+
+            <button class="page-btn prev-next" (click)="nextPage()" [disabled]="currentPage === totalPages">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
 
     </div>
   </div>
 
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2 class="modal-title">{{ editMode ? 'Edit Transaction' : 'Add Transaction' }}</h2>
-        <button class="close-btn" (click)="closeModal()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="modal-body">
-
-          <div *ngIf="errorMessage" class="error-banner">
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+  @if (showImportModal) {
+    <div class="modal-overlay" (click)="closeImportModal()">
+      <div class="modal-content import-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>{{ errorMessage }}</span>
+            Importar Extrato AIB
+          </h2>
+          <button class="close-btn" (click)="closeImportModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body import-modal-body">
+
+          @if (importSuccess) {
+            <div class="import-success-banner">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>{{ importSuccess }}</span>
+            </div>
+          }
+
+          @if (importError) {
+            <div class="error-banner">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>{{ importError }}</span>
+            </div>
+          }
+
+          @if (!importSuccess) {
+            <div class="import-info">
+              <span class="import-count">{{ importRows.length }} transação(ões)</span>
+              <span class="import-hint">Verifique e ajuste as categorias antes de confirmar.</span>
+            </div>
+          }
+
+          @if (importRows.length > 0 && !importSuccess) {
+            <div class="import-filter-bar">
+              <button class="import-filter-btn" [class.active]="importFilter === 'all'" (click)="importFilter = 'all'">
+                Todos ({{ importRows.length }})
+              </button>
+              <button class="import-filter-btn income" [class.active]="importFilter === 'income'" (click)="importFilter = 'income'">
+                Entradas ({{ importIncomeCount }})
+              </button>
+              <button class="import-filter-btn expense" [class.active]="importFilter === 'expense'" (click)="importFilter = 'expense'">
+                Saídas ({{ importExpenseCount }})
+              </button>
+            </div>
+          }
+
+          @if (importRows.length > 0 && !importSuccess) {
+            <div class="import-table-wrapper">
+              <table class="import-table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Valor ({{ currencySymbol }})</th>
+                    <th>Categoria</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of filteredImportRows; track $index) {
+                    <tr [class.row-missing-cat]="!row.categoryId">
+                      <td>{{ fmtDate(row.date) }}</td>
+                      <td class="import-desc">{{ row.description }}</td>
+                      <td>
+                        <span class="import-type-badge" [class.income]="row.type === 'income'" [class.expense]="row.type === 'expense'">
+                          {{ row.type === 'income' ? 'Entrada' : 'Saída' }}
+                        </span>
+                      </td>
+                      <td class="import-amount" [class.income]="row.type === 'income'" [class.expense]="row.type === 'expense'">
+                        {{ row.type === 'income' ? '+' : '–' }}{{ currencySymbol }}{{ fmt(row.amount) }}
+                      </td>
+                      <td>
+                        <select class="import-cat-select" [(ngModel)]="row.categoryId">
+                          <option value="">-- Selecionar --</option>
+                          @for (cat of importCats(row.type); track cat.id) {
+                            <option [value]="cat.id">{{ cat.name }}</option>
+                          }
+                        </select>
+                      </td>
+                      <td>
+                        <button class="import-remove-btn" (click)="removeImportRow(row)" title="Remover">
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+
+        </div>
+
+        @if (!importSuccess) {
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeImportModal()" [disabled]="importLoading">Cancelar</button>
+            <button type="button" class="btn-primary" (click)="confirmImport()"
+              [disabled]="importLoading || importRows.length === 0">
+              @if (!importLoading) {
+                <span>Importar {{ importRows.length }} transação(ões)</span>
+              } @else {
+                <span>A importar...</span>
+              }
+            </button>
           </div>
+        }
+      </div>
+    </div>
+  }
 
-          <div class="form-grid">
+  @if (showModal) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ (editMode ? 'transactions.editTitle' : 'transactions.addTitle') | translate }}</h2>
+          <button class="close-btn" (click)="closeModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
 
-            <div class="form-group span-2">
-              <label>Type</label>
-              <div class="type-toggle">
-                <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'income'"
-                  (click)="setType('income')">
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  Income
-                </button>
-                <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'expense'"
-                  (click)="setType('expense')">
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  Expense
-                </button>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="modal-body">
+
+            @if (errorMessage) {
+              <div class="error-banner">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                  <path
+                    d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>{{ errorMessage }}</span>
               </div>
-            </div>
+            }
 
-            <div class="form-group">
-              <label for="amount">Amount (€)</label>
-              <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00"
-                [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid" />
-              <span class="error-message"
-                *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is
-                required</span>
-            </div>
+            <div class="form-grid">
 
-            <div class="form-group">
-              <label for="date">Date</label>
-              <input type="date" id="date" formControlName="date"
-                [class.error]="form.get('date')?.touched && form.get('date')?.invalid" />
-              <span class="error-message"
-                *ngIf="form.get('date')?.touched && form.get('date')?.errors?.['required']">Date is required</span>
-            </div>
-
-            <div class="form-group span-2">
-              <label for="categoryId">Category</label>
-              <select id="categoryId" formControlName="categoryId"
-                [class.error]="form.get('categoryId')?.touched && form.get('categoryId')?.invalid">
-                <option value="">Select a category</option>
-                <option *ngFor="let category of filteredCats()" [value]="category.id">{{ category.icon }} {{
-                  category.name }}</option>
-              </select>
-              <span class="error-message"
-                *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">Category is
-                required</span>
-            </div>
-
-            <div class="form-group span-2">
-              <label for="description">Description</label>
-              <textarea id="description" formControlName="description" rows="2"
-                placeholder="Enter transaction details..."
-                [class.error]="form.get('description')?.touched && form.get('description')?.invalid"></textarea>
-              <span class="error-message"
-                *ngIf="form.get('description')?.touched && form.get('description')?.errors?.['required']">Description is
-                required</span>
-            </div>
-
-            <div class="recurring-section span-2">
-              <div class="recurring-toggle-row" (click)="toggleRecurring()">
-                <div class="recurring-toggle-info">
-                  <span class="recurring-icon">&#x1F501;</span>
-                  <div>
-                    <span class="recurring-label">Recurring transaction</span>
-                    <p class="recurring-desc">Repeat automatically every week, month or year</p>
-                  </div>
+              <div class="form-group span-2">
+                <label>{{ 'form.type' | translate }}</label>
+                <div class="type-toggle">
+                  <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'income'"
+                    (click)="setType('income')">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    {{ 'form.income' | translate }}
+                  </button>
+                  <button type="button" class="type-option" [class.active]="form.get('type')?.value === 'expense'"
+                    (click)="setType('expense')">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                      <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    {{ 'form.expense' | translate }}
+                  </button>
                 </div>
-                <label class="toggle-switch" (click)="$event.stopPropagation()">
-                  <input type="checkbox" [checked]="form.get('isRecurring')?.value" (change)="toggleRecurring()" />
-                  <span class="toggle-slider"></span>
-                </label>
               </div>
 
-              <div class="recurring-options" *ngIf="form.get('isRecurring')?.value">
-                <div class="recurring-fields">
-                  <div class="form-group">
-                    <label>Frequency</label>
-                    <div class="frequency-options">
-                      <button type="button" class="freq-btn"
-                        [class.active]="form.get('recurringFrequency')?.value === 'weekly'"
-                        (click)="setFrequency('weekly')">Weekly</button>
-                      <button type="button" class="freq-btn"
-                        [class.active]="form.get('recurringFrequency')?.value === 'monthly'"
-                        (click)="setFrequency('monthly')">Monthly</button>
-                      <button type="button" class="freq-btn"
-                        [class.active]="form.get('recurringFrequency')?.value === 'yearly'"
-                        (click)="setFrequency('yearly')">Yearly</button>
+              <div class="form-group">
+                <label for="amount">{{ 'form.amount' | translate }} ({{ currencySymbol }})</label>
+                <input type="number" id="amount" formControlName="amount" step="0.01" min="0" placeholder="0.00"
+                  [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid" />
+                @if (form.get('amount')?.touched && form.get('amount')?.errors?.['required']) {
+                  <span class="error-message">{{ 'val.amountRequired' | translate }}</span>
+                }
+              </div>
+
+              <div class="form-group">
+                <label for="date">{{ 'form.date' | translate }}</label>
+                <input type="date" id="date" formControlName="date"
+                  [class.error]="form.get('date')?.touched && form.get('date')?.invalid" />
+                @if (form.get('date')?.touched && form.get('date')?.errors?.['required']) {
+                  <span class="error-message">{{ 'val.dateRequired' | translate }}</span>
+                }
+              </div>
+
+              <div class="form-group span-2">
+                <label for="categoryId">{{ 'form.category' | translate }}</label>
+                <select id="categoryId" formControlName="categoryId"
+                  [class.error]="form.get('categoryId')?.touched && form.get('categoryId')?.invalid">
+                  <option value="">{{ 'form.selectCategory' | translate }}</option>
+                  @for (category of filteredCats(); track category.id) {
+                    <option [value]="category.id">{{ category.name }}</option>
+                  }
+                </select>
+                @if (form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']) {
+                  <span class="error-message">{{ 'val.categoryRequired' | translate }}</span>
+                }
+              </div>
+
+              <div class="form-group span-2">
+                <label for="description">{{ 'form.description' | translate }}</label>
+                <textarea id="description" formControlName="description" rows="2"
+                  [placeholder]="'form.enterDetails' | translate"
+                  [class.error]="form.get('description')?.touched && form.get('description')?.invalid"></textarea>
+                @if (form.get('description')?.touched && form.get('description')?.errors?.['required']) {
+                  <span class="error-message">{{ 'val.descriptionRequired' | translate }}</span>
+                }
+              </div>
+
+              <div class="recurring-section span-2">
+                <div class="recurring-toggle-row" (click)="toggleRecurring()">
+                  <div class="recurring-toggle-info">
+                    <span class="recurring-icon">&#x1F501;</span>
+                    <div>
+                      <span class="recurring-label">{{ 'form.recurring' | translate }}</span>
+                      <p class="recurring-desc">{{ 'form.recurringDesc' | translate }}</p>
                     </div>
                   </div>
-                  <div class="form-group">
-                    <label>End date <span class="optional-tag">optional</span></label>
-                    <input type="date" formControlName="recurringEndDate" [min]="form.get('date')?.value" />
-                    <p class="field-hint">Leave empty to repeat indefinitely (max 60 occurrences)</p>
-                  </div>
-                  <div class="recurring-preview" *ngIf="form.get('recurringFrequency')?.value">
-                    <span>&#x1F4C5;</span>
-                    <span>{{ recurringPreview() }}</span>
-                  </div>
+                  <label class="toggle-switch" (click)="$event.stopPropagation()">
+                    <input type="checkbox" [checked]="form.get('isRecurring')?.value" (change)="toggleRecurring()" />
+                    <span class="toggle-slider"></span>
+                  </label>
                 </div>
+
+                @if (form.get('isRecurring')?.value) {
+                  <div class="recurring-options">
+                    <div class="recurring-fields">
+                      <div class="form-group">
+                        <label>{{ 'form.frequency' | translate }}</label>
+                        <div class="frequency-options">
+                          <button type="button" class="freq-btn"
+                            [class.active]="form.get('recurringFrequency')?.value === 'weekly'"
+                            (click)="setFrequency('weekly')">{{ 'form.weekly' | translate }}</button>
+                          <button type="button" class="freq-btn"
+                            [class.active]="form.get('recurringFrequency')?.value === 'biweekly'"
+                            (click)="setFrequency('biweekly')">{{ 'form.biweekly' | translate }}</button>
+                          <button type="button" class="freq-btn"
+                            [class.active]="form.get('recurringFrequency')?.value === 'monthly'"
+                            (click)="setFrequency('monthly')">{{ 'form.monthly' | translate }}</button>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label>{{ 'form.endDate' | translate }} <span class="optional-tag">{{ 'form.optional' | translate }}</span></label>
+                        <input type="date" formControlName="recurringEndDate" [min]="form.get('date')?.value" />
+                        <p class="field-hint">{{ 'form.endDateHint' | translate }}</p>
+                      </div>
+                      @if (form.get('recurringFrequency')?.value) {
+                        <div class="recurring-preview">
+                          <span>&#x1F4C5;</span>
+                          <span>{{ recurringPreview() }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
+
             </div>
-
           </div>
-        </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">{{ editMode ? 'Update' : 'Add' }} Transaction</span>
-            <span *ngIf="isLoading">{{ editMode ? 'Updating...' : 'Adding...' }}</span>
-          </button>
-        </div>
-      </form>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeModal()">{{ 'transactions.cancel' | translate }}</button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading || isSubmitting">
+              @if (!isSubmitting) {
+                <span>{{ (editMode ? 'transactions.update' : 'transactions.add') | translate }}</span>
+              } @else {
+                <span>{{ (editMode ? 'transactions.updating' : 'transactions.adding') | translate }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  }
 
 </app-navbar>

@@ -44,6 +44,13 @@ export class BudgetService {
     );
   }
 
+  rollover(month: number, year: number): Observable<Budget[]> {
+    return this.http.post<any[]>(`${this.apiUrl}/rollover`, { month, year }).pipe(
+      map(bs => bs.map(b => this.normalize(b))),
+      tap(() => this.invalidate())
+    );
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => this.invalidate())

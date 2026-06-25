@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth';
+import { LanguageService } from '../../../services/language.service';
+import { TranslatePipe } from '../../../pipes/translate.pipe';
 
 function pwdMatch(group: AbstractControl): ValidationErrors | null {
   const pw  = group.get('password')?.value;
@@ -12,7 +14,7 @@ function pwdMatch(group: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe],
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
@@ -27,7 +29,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    public lang: LanguageService
   ) {
     this.form = this.fb.group({
       name:            ['', [Validators.required, Validators.minLength(2)]],
@@ -50,14 +53,23 @@ export class RegisterComponent {
     return score;
   }
 
+  strengthLabel(): string {
+    const labels = ['', 'auth.strengthWeak', 'auth.strengthFair', 'auth.strengthGood', 'auth.strengthStrong'];
+    return labels[this.pwdStrength()] || '';
+  }
+
   fieldErr(field: string): string | null {
     const ctrl = this.form.get(field);
     if (!ctrl?.touched) return null;
-    if (field === 'confirmPassword' && this.form.errors?.['passwordMismatch']) return 'Passwords do not match';
+    if (field === 'confirmPassword' && this.form.errors?.['passwordMismatch']) return 'val.passwordMismatch';
     if (!ctrl.errors) return null;
-    if (ctrl.errors['required'])  return `${field === 'name' ? 'Name' : field === 'email' ? 'Email' : 'Password'} is required`;
-    if (ctrl.errors['email'])     return 'Please enter a valid email';
-    if (ctrl.errors['minlength']) return `Minimum ${ctrl.errors['minlength'].requiredLength} characters required`;
+    if (ctrl.errors['required']) {
+      if (field === 'name') return 'val.nameRequired';
+      if (field === 'email') return 'val.emailRequired';
+      return 'val.passwordRequired';
+    }
+    if (ctrl.errors['email'])     return 'val.emailInvalid';
+    if (ctrl.errors['minlength']) return field === 'name' ? 'val.nameMinLength' : 'val.passwordMin';
     return null;
   }
 
@@ -72,7 +84,8 @@ export class RegisterComponent {
     this.auth.register({ name, email, password }).subscribe({
       next:  () => this.router.navigate(['/dashboard']),
       error: (err: any) => {
-        this.error   = err.error?.message || 'Failed to create account';
+        const msg = err.error?.message || '';
+        this.error = msg.toLowerCase().includes('already exists') ? 'auth.emailTaken' : 'auth.registerError';
         this.loading = false;
       }
     });

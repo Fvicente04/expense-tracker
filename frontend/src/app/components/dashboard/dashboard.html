@@ -1,203 +1,325 @@
 <app-navbar>
 
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Loading dashboard...</p>
-  </div>
-
-  <div *ngIf="!isLoading" class="dashboard-content">
-
-    <div class="top-header">
-      <div>
-        <p class="greeting">Good {{ greeting() }}, {{ userName }} &#x1F44B;</p>
-        <h1 class="page-title">Financial Overview</h1>
-      </div>
-      <div class="date-pill">{{ todayLabel }} &middot; Day {{ dayOfMonth }} of {{ totalDaysInMonth }}</div>
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>{{ 'dashboard.loading' | translate }}</p>
     </div>
+  }
 
-    <div *ngIf="alertBudget" class="alert-banner">
-      <span class="alert-icon">&#x26A0;&#xFE0F;</span>
-      <span class="alert-text">
-        <strong>{{ alertBudget.category?.name || 'A budget' }}</strong>
-        is at {{ budgetPct(alertBudget) | number:'1.0-0' }}% &mdash;
-        only &#x20AC;{{ fmt(budgetRemaining(alertBudget)) }} remaining for {{ daysRemaining }} days.
-      </span>
-      <span class="alert-action" (click)="goTo('budgets')">Adjust &rarr;</span>
-    </div>
+  @if (!isLoading) {
+    <div class="dashboard-content">
 
-    <div class="hero-card"
-         [class.hero-warning]="financialStatus === 'warning'"
-         [class.hero-danger]="financialStatus === 'danger'">
-
-      <div class="hero-left">
-        <p class="hero-label">&#x2726; Safe to spend today</p>
-        <div class="hero-amount">
-          <span class="hero-currency">&#x20AC;</span>{{ fmt(safeToSpend) }}
+      <div class="top-header">
+        <div>
+          <p class="greeting">{{ ('greeting.' + greeting()) | translate:{ name: userName } }}</p>
+          <h1 class="page-title">{{ 'dashboard.title' | translate }}</h1>
         </div>
-        <p class="hero-subtitle">
-          Spent <strong>&#x20AC;{{ fmt(totalExpense) }}</strong> this month
-          &middot; Balance <strong>&#x20AC;{{ fmt(balance) }}</strong>
-          &middot; {{ daysRemaining }} days remaining<br>
-          <span [class]="'pace-label pace-' + financialStatus">
-            <ng-container *ngIf="financialStatus === 'good'">You're on track for this month.</ng-container>
-            <ng-container *ngIf="financialStatus === 'warning'">Some budgets need attention.</ng-container>
-            <ng-container *ngIf="financialStatus === 'danger'">Balance is negative &mdash; review your spending.</ng-container>
+        <div class="date-pill">{{ todayLabel }} &middot; {{ 'dashboard.day' | translate }} {{ dayOfMonth }} {{ 'dashboard.of' | translate }} {{ totalDaysInMonth }}</div>
+      </div>
+
+      @if (alertBudget) {
+        <div class="alert-banner">
+          <span class="alert-icon">&#x26A0;&#xFE0F;</span>
+          <span class="alert-text">
+            <strong>{{ alertBudget.category?.name || ('dashboard.aBudget' | translate) }}</strong>
+            {{ 'dashboard.alertAt' | translate }} {{ budgetPct(alertBudget) | number:'1.0-0' }}%
+            {{ 'dashboard.alertOnly' | translate }} {{ currencySymbol }}{{ fmt(budgetRemaining(alertBudget)) }}
+            {{ 'dashboard.alertRemaining' | translate }} {{ daysRemaining }} {{ 'dashboard.alertDays' | translate }}
           </span>
-        </p>
-      </div>
-
-      <div class="hero-right">
-        <div class="status-badge" [class]="'status-' + financialStatus">
-          <span class="status-dot"></span>{{ statusLabel }}
+          <span class="alert-action" (click)="goTo('budgets')">{{ 'dashboard.adjust' | translate }}</span>
         </div>
-        <div class="hero-meta">
-          <span>Income: <strong>&#x20AC;{{ fmt(totalIncome) }}</strong></span>
-          <span>Spent: <strong>&#x20AC;{{ fmt(totalExpense) }}</strong></span>
-          <span>Balance: <strong>&#x20AC;{{ fmt(balance) }}</strong></span>
-        </div>
-      </div>
+      }
 
-    </div>
+      <div class="hero-card"
+           [class.hero-warning]="financialStatus === 'warning'"
+           [class.hero-danger]="financialStatus === 'danger'">
 
-    <div class="stats-row">
-
-      <div class="stat-card">
-        <div class="stat-icon icon-green">&#x1F4B0;</div>
-        <div class="stat-info">
-          <p class="stat-label">Income this month</p>
-          <p class="stat-value value-green">&#x20AC;{{ fmt(totalIncome) }}</p>
-          <p class="stat-delta"
-             [class.delta-up]="incomeVsLastMonth >= 0"
-             [class.delta-down]="incomeVsLastMonth < 0">
-            {{ incomeVsLastMonth >= 0 ? '&#x2191;' : '&#x2193;' }} {{ fmtDelta(incomeVsLastMonth) }} vs last month
+        <div class="hero-left">
+          <p class="hero-label">{{ 'dashboard.safeToSpend' | translate }}</p>
+          <div class="hero-amount">
+            <span class="hero-currency">{{ currencySymbol }}</span>{{ fmt(safeToSpend) }}
+          </div>
+          <p class="hero-subtitle">
+            {{ 'dashboard.spentLabel' | translate }} <strong>{{ currencySymbol }}{{ fmt(totalExpense) }}</strong> {{ 'dashboard.thisMonth' | translate }}
+            &middot; {{ 'dashboard.balanceLabel' | translate }} <strong>{{ currencySymbol }}{{ fmt(balance) }}</strong>
+            &middot; {{ daysRemaining }} {{ 'dashboard.daysRemaining' | translate }}<br>
+            <span [class]="'pace-label pace-' + financialStatus">
+              @if (financialStatus === 'good') {
+                {{ 'dashboard.onTrack' | translate }}
+              } @else if (financialStatus === 'warning') {
+                {{ 'dashboard.watchSpending' | translate }}
+              } @else {
+                {{ 'dashboard.overBudget' | translate }}
+              }
+            </span>
           </p>
         </div>
-      </div>
 
-      <div class="stat-card">
-        <div class="stat-icon icon-red">&#x1F4B8;</div>
-        <div class="stat-info">
-          <p class="stat-label">Spent this month</p>
-          <p class="stat-value value-red">&#x20AC;{{ fmt(totalExpense) }}</p>
-          <p class="stat-delta"
-             [class.delta-up]="expenseVsLastMonth <= 0"
-             [class.delta-down]="expenseVsLastMonth > 0">
-            {{ expenseVsLastMonth <= 0 ? '&#x2193;' : '&#x2191;' }} {{ fmtDelta(expenseVsLastMonth) }} vs last month
-          </p>
+        <div class="hero-right">
+          <div class="status-badge" [class]="'status-' + financialStatus">
+            <span class="status-dot"></span>{{ statusLabel | translate }}
+          </div>
+          <div class="hero-meta">
+            <span>{{ 'dashboard.income' | translate }}: <strong>{{ currencySymbol }}{{ fmt(totalIncome) }}</strong></span>
+            <span>{{ 'dashboard.spent' | translate }}: <strong>{{ currencySymbol }}{{ fmt(totalExpense) }}</strong></span>
+            <span>{{ 'dashboard.balance' | translate }}: <strong>{{ currencySymbol }}{{ fmt(balance) }}</strong></span>
+          </div>
         </div>
+
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon icon-blue">&#x1F4C5;</div>
-        <div class="stat-info">
-          <p class="stat-label">Monthly average</p>
-          <p class="stat-value value-blue">&#x20AC;{{ fmt(monthlyAvgExpense) }}</p>
-          <p class="stat-delta" [class.delta-up]="monthlyAvgExpense <= totalExpense" [class.delta-down]="monthlyAvgExpense > totalExpense">
-            <ng-container *ngIf="avgMonthsLoaded > 0">
-              {{ totalExpense <= monthlyAvgExpense ? '&#x2193; Below' : '&#x2191; Above' }} avg &middot; &#x20AC;{{ fmt(monthlyAvgIncome) }} income avg
-            </ng-container>
-            <ng-container *ngIf="avgMonthsLoaded === 0">Not enough history yet</ng-container>
-          </p>
+      <div class="stats-row">
+
+        <div class="stat-card">
+          <div class="stat-icon icon-green"><app-lucide-icon name="trendingUp" [size]="22" [strokeWidth]="2"></app-lucide-icon></div>
+          <div class="stat-info">
+            <p class="stat-label">{{ 'dashboard.incomeThisMonth' | translate }}</p>
+            <p class="stat-value value-green">{{ currencySymbol }}{{ fmt(totalIncome) }}</p>
+            <p class="stat-delta"
+               [class.delta-up]="incomeVsLastMonth >= 0"
+               [class.delta-down]="incomeVsLastMonth < 0">
+              {{ incomeVsLastMonth >= 0 ? '&#x2191;' : '&#x2193;' }} {{ fmtDelta(incomeVsLastMonth) }} {{ 'dashboard.vsLastMonth' | translate }}
+            </p>
+          </div>
         </div>
+
+        <div class="stat-card">
+          <div class="stat-icon icon-red"><app-lucide-icon name="trendingDown" [size]="22" [strokeWidth]="2"></app-lucide-icon></div>
+          <div class="stat-info">
+            <p class="stat-label">{{ 'dashboard.spentThisMonth' | translate }}</p>
+            <p class="stat-value value-red">{{ currencySymbol }}{{ fmt(totalExpense) }}</p>
+            <p class="stat-delta"
+               [class.delta-up]="expenseVsLastMonth <= 0"
+               [class.delta-down]="expenseVsLastMonth > 0">
+              {{ expenseVsLastMonth <= 0 ? '&#x2193;' : '&#x2191;' }} {{ fmtDelta(expenseVsLastMonth) }} {{ 'dashboard.vsLastMonth' | translate }}
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon icon-blue"><app-lucide-icon name="chartColumn" [size]="22" [strokeWidth]="2"></app-lucide-icon></div>
+          <div class="stat-info">
+            <p class="stat-label">{{ 'dashboard.monthlyAverage' | translate }}</p>
+            <p class="stat-value value-blue">{{ currencySymbol }}{{ fmt(monthlyAvgExpense) }}</p>
+            <p class="stat-delta" [class.delta-up]="monthlyAvgExpense <= totalExpense" [class.delta-down]="monthlyAvgExpense > totalExpense">
+              @if (avgMonthsLoaded > 0) {
+                {{ totalExpense <= monthlyAvgExpense ? ('dashboard.belowAvg' | translate) : ('dashboard.aboveAvg' | translate) }}
+                {{ 'dashboard.avg' | translate }} &middot; {{ currencySymbol }}{{ fmt(monthlyAvgIncome) }} {{ 'dashboard.incomeAvg' | translate }}
+              } @else {
+                {{ 'dashboard.noHistory' | translate }}
+              }
+            </p>
+          </div>
+        </div>
+
       </div>
 
-    </div>
+      @if (activeGoals.length > 0 || alertCards.length > 0) {
+        <div class="middle-row">
 
-    <div class="bottom-grid">
+          @if (activeGoals.length > 0) {
+            <div class="card">
+              <div class="card-title">
+                {{ 'dashboard.goalsProgress' | translate }}
+                <span class="card-link" (click)="goTo('goals')">{{ 'dashboard.allGoals' | translate }}</span>
+              </div>
+              <div class="goal-list">
+                @for (g of activeGoals; track g.id) {
+                  <div class="goal-item">
+                    <div class="goal-top">
+                      <span class="goal-name">
+                        <span class="goal-icon">
+                          @if (isLucideIcon(g.icon)) {
+                            <app-lucide-icon [name]="g.icon" [size]="16" [strokeWidth]="1.5"></app-lucide-icon>
+                          } @else {
+                            <span>{{ g.icon }}</span>
+                          }
+                        </span>
+                        {{ g.name }}
+                      </span>
+                      <span class="goal-pct">{{ goalPct(g) | number:'1.0-0' }}%</span>
+                    </div>
+                    <div class="bar-track">
+                      <div class="bar-fill bar-good" [style.width.%]="goalPct(g)"></div>
+                    </div>
+                    <div class="goal-meta">
+                      <span>{{ currencySymbol }}{{ fmt(g.savedAmount) }} / {{ currencySymbol }}{{ fmt(g.targetAmount) }}</span>
+                      @if (goalDaysLeft(g) !== null) {
+                        @if ((goalDaysLeft(g) || 0) >= 0) {
+                          <span>{{ 'dashboard.daysLeft' | translate:{ n: (goalDaysLeft(g) ?? 0) } }}</span>
+                        } @else {
+                          <span class="goal-overdue">{{ 'goals.overdue' | translate }}</span>
+                        }
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
 
-      <div class="left-col">
+          @if (alertCards.length > 0) {
+            <div class="card">
+              <div class="card-title">
+                {{ 'dashboard.cardsToWatch' | translate }}
+                <span class="card-link" (click)="goTo('credit-cards')">{{ 'dashboard.viewAll' | translate }}</span>
+              </div>
+              <div class="cc-alert-list">
+                @for (card of alertCards; track card.id) {
+                  <div class="cc-alert-item">
+                    <div class="cc-color-dot" [style.background]="card.color"></div>
+                    <div class="cc-alert-info">
+                      <span class="cc-alert-name">{{ card.name }}</span>
+                      @if (card.dueAlert) {
+                        <span class="cc-alert-sub">
+                          {{ 'dashboard.dueIn' | translate:{ n: (card.daysUntilDue ?? 0) } }}
+                        </span>
+                      }
+                      @if (card.utilizationAlert && !card.dueAlert) {
+                        <span class="cc-alert-sub util">
+                          {{ card.utilizationPct }}{{ 'dashboard.utilized' | translate }}
+                        </span>
+                      }
+                    </div>
+                    @if (card.dueAlert) {
+                      <span class="cc-alert-badge due">{{ 'dashboard.dueSoon' | translate }}</span>
+                    }
+                    @if (card.utilizationAlert && !card.dueAlert) {
+                      <span class="cc-alert-badge util">{{ 'dashboard.highUsage' | translate }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
 
-        <div class="card">
+        </div>
+      }
+
+      <div class="bottom-grid">
+
+        <div class="left-col">
+
+          <div class="card">
+            <div class="card-title">
+              {{ 'dashboard.budgetSnapshot' | translate }}
+              <span class="card-link" (click)="goTo('budgets')">{{ 'dashboard.manage' | translate }}</span>
+            </div>
+
+            @if (budgetsSortedByRisk.length === 0) {
+              <div class="empty-state">
+                <p>{{ 'dashboard.noBudgets' | translate }}</p>
+                <button class="btn-link" (click)="goTo('budgets')">{{ 'dashboard.createBudget' | translate }}</button>
+              </div>
+            }
+
+            @if (budgetsSortedByRisk.length > 0) {
+              <div class="budget-list">
+                @for (budget of budgetsSortedByRisk; track budget.id; let i = $index) {
+                  @if (i > 0 && riskGroupChanged(i)) {
+                    <div class="budget-divider"></div>
+                  }
+                  <div class="budget-item">
+                    <div class="budget-top">
+                      <span class="budget-name">
+                        <span class="budget-emoji">
+                          @if (isLucideIcon(budget.category?.icon || '')) {
+                            <app-lucide-icon [name]="budget.category?.icon || ''" [size]="16" [strokeWidth]="1.5"></app-lucide-icon>
+                          } @else {
+                            <span>{{ budget.category?.icon || '📁' }}</span>
+                          }
+                        </span>
+                        {{ budget.category?.name || ('dashboard.other' | translate) }}
+                      </span>
+                      <span class="budget-numbers">
+                        <strong>{{ currencySymbol }}{{ fmt(budget.spent || 0) }}</strong> / {{ currencySymbol }}{{ fmt(budget.amount) }}
+                      </span>
+                    </div>
+                    <div class="bar-track">
+                      <div class="bar-fill"
+                           [class]="'bar-' + budgetStatus(budget)"
+                           [style.width.%]="budgetPct(budget)">
+                      </div>
+                    </div>
+                    @if (budgetStatus(budget) === 'danger') {
+                      <p class="budget-alert">
+                        &#x26A0; {{ currencySymbol }}{{ fmt(budgetRemaining(budget)) }} {{ 'dashboard.left' | translate }} &middot; {{ daysRemaining }} {{ 'dashboard.daysToGo' | translate }}
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              {{ 'dashboard.spendingThisWeek' | translate }}
+              <span class="card-link" (click)="goTo('reports')">{{ 'dashboard.fullReport' | translate }}</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="weekChart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="card right-col">
           <div class="card-title">
-            Budget Snapshot
-            <span class="card-link" (click)="goTo('budgets')">Manage &rarr;</span>
+            {{ 'dashboard.recent' | translate }}
+            <span class="card-link" (click)="goTo('transactions')">{{ 'dashboard.all' | translate }}</span>
           </div>
 
-          <div *ngIf="budgetsSortedByRisk.length === 0" class="empty-state">
-            <p>No budgets set for this month.</p>
-            <button class="btn-link" (click)="goTo('budgets')">Create a budget &rarr;</button>
+          <div class="tx-today-total">
+            <span>{{ 'dashboard.today' | translate }}</span>
+            @if (spentToday > 0) {
+              <strong>&ndash;{{ currencySymbol }}{{ fmt(spentToday) }}</strong>
+            } @else {
+              <span class="no-spend-today">{{ 'dashboard.noSpendingToday' | translate }}</span>
+            }
           </div>
 
-          <div class="budget-list" *ngIf="budgetsSortedByRisk.length > 0">
-            <ng-container *ngFor="let budget of budgetsSortedByRisk; let i = index">
-              <div *ngIf="i > 0 && riskGroupChanged(i)" class="budget-divider"></div>
-              <div class="budget-item">
-                <div class="budget-top">
-                  <span class="budget-name">
-                    <span class="budget-emoji">{{ budget.category?.icon || '&#x1F4C1;' }}</span>
-                    {{ budget.category?.name || 'Other' }}
-                  </span>
-                  <span class="budget-numbers">
-                    <strong>&#x20AC;{{ fmt(budget.spent || 0) }}</strong> / &#x20AC;{{ fmt(budget.amount) }}
-                  </span>
-                </div>
-                <div class="bar-track">
-                  <div class="bar-fill"
-                       [class]="'bar-' + budgetStatus(budget)"
-                       [style.width.%]="budgetPct(budget)">
+          @if (recentTransactions.length === 0) {
+            <div class="empty-state">
+              <p>{{ 'dashboard.noTransactions' | translate }}</p>
+              <button class="btn-link" (click)="goTo('transactions')">{{ 'dashboard.addOne' | translate }}</button>
+            </div>
+          }
+
+          @if (recentTransactions.length > 0) {
+            <div class="tx-list">
+              @for (tx of recentTransactions; track tx.id) {
+                <div class="tx-item" (click)="goTo('transactions')">
+                  <div class="tx-icon" [style.color]="tx.category?.color || '#6b7280'">
+                    @if (isLucideIcon(tx.category?.icon || '')) {
+                      <app-lucide-icon [name]="tx.category?.icon || ''" [size]="20" [strokeWidth]="1.5"></app-lucide-icon>
+                    } @else {
+                      <span>{{ tx.category?.icon || '💳' }}</span>
+                    }
+                  </div>
+                  <div class="tx-details">
+                    <p class="tx-name">{{ tx.description || tx.category?.name }}</p>
+                    <p class="tx-cat">{{ tx.category?.name }}</p>
+                  </div>
+                  <div class="tx-right">
+                    <p class="tx-amount" [class.income]="tx.type === 'income'">
+                      {{ tx.type === 'income' ? '+' : '&ndash;' }}{{ currencySymbol }}{{ fmt(tx.amount) }}
+                    </p>
+                    <p class="tx-date">{{ fmtTxDate(tx.date) }}</p>
                   </div>
                 </div>
-                <p *ngIf="budgetStatus(budget) === 'danger'" class="budget-alert">
-                  &#x26A0; &#x20AC;{{ fmt(budgetRemaining(budget)) }} left &middot; {{ daysRemaining }} days to go
-                </p>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">
-            Spending this week
-            <span class="card-link" (click)="goTo('reports')">Full report &rarr;</span>
-          </div>
-          <div class="chart-container">
-            <canvas id="weekChart"></canvas>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="card right-col">
-        <div class="card-title">
-          Recent
-          <span class="card-link" (click)="goTo('transactions')">All &rarr;</span>
-        </div>
-
-        <div class="tx-today-total">
-          <span>Today</span>
-          <strong *ngIf="spentToday > 0">&ndash;&#x20AC;{{ fmt(spentToday) }}</strong>
-          <span *ngIf="spentToday === 0" class="no-spend-today">No spending today &#x1F389;</span>
-        </div>
-
-        <div *ngIf="recentTransactions.length === 0" class="empty-state">
-          <p>No transactions this month.</p>
-          <button class="btn-link" (click)="goTo('transactions')">Add one &rarr;</button>
-        </div>
-
-        <div class="tx-list" *ngIf="recentTransactions.length > 0">
-          <div class="tx-item"
-               *ngFor="let tx of recentTransactions"
-               (click)="goTo('transactions')">
-            <div class="tx-icon">{{ tx.category?.icon || '&#x1F4B3;' }}</div>
-            <div class="tx-details">
-              <p class="tx-name">{{ tx.description || tx.category?.name }}</p>
-              <p class="tx-cat">{{ tx.category?.name }}</p>
+              }
             </div>
-            <div class="tx-right">
-              <p class="tx-amount" [class.income]="tx.type === 'income'">
-                {{ tx.type === 'income' ? '+' : '&ndash;' }}&#x20AC;{{ fmt(tx.amount) }}
-              </p>
-              <p class="tx-date">{{ fmtTxDate(tx.date) }}</p>
-            </div>
-          </div>
-        </div>
+          }
 
-        <button class="add-btn" (click)="goTo('transactions', {openModal: true})">+ Add Transaction</button>
+          <button class="add-btn" (click)="goTo('transactions', {openModal: true})">{{ 'dashboard.addTransaction' | translate }}</button>
+
+        </div>
 
       </div>
 
     </div>
-
-  </div>
+  }
 
 </app-navbar>

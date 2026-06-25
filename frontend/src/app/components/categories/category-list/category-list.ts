@@ -4,13 +4,29 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../../layout/navbar/navbar';
 import { CategoryService } from '../../../services/category';
+import { LanguageService } from '../../../services/language.service';
+import { TranslatePipe } from '../../../pipes/translate.pipe';
 import { Category } from '../../../models/category';
-
-const E = '\uFE0F';
+import { LucideIconComponent, LUCIDE_ICON_NAMES } from '../../shared/lucide-icon';
+import {
+  LucidePlus,
+  LucideSearch,
+  LucideX,
+  LucideCircleAlert,
+  LucidePencil,
+  LucideTrash2,
+  LucideTrendingUp,
+  LucideTrendingDown,
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-category-list',
-  imports: [CommonModule, NavbarComponent, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule, NavbarComponent, ReactiveFormsModule, FormsModule, TranslatePipe,
+    LucideIconComponent,
+    LucidePlus, LucideSearch, LucideX, LucideCircleAlert,
+    LucidePencil, LucideTrash2, LucideTrendingUp, LucideTrendingDown,
+  ],
   templateUrl: './category-list.html',
   styleUrl: './category-list.css'
 })
@@ -24,24 +40,23 @@ export class CategoryListComponent implements OnInit {
   editingId = '';
   form: FormGroup;
   selectedType: 'income' | 'expense' = 'expense';
-  selectedIcon = '\u{1F4B0}';
+  selectedIcon = 'wallet';
   selectedColor = '#667eea';
   customColor = '#667eea';
-  activeIconGroup = 'Finance';
+  activeIconGroup = 'Finanças';
   searchQuery = '';
   typeFilter: 'all' | 'expense' | 'income' = 'all';
 
-  iconGroups = [
-    { label: 'Finance',       icons: ['\u{1F4B0}','\u{1F4B5}','\u{1F4B8}','\u{1F4B3}','\u{1F3E6}','\u{1F4C8}','\u{1F4C9}','\u{1FA99}','\u{1F4CA}','\u{1F48E}'] },
-    { label: 'Home',          icons: ['\u{1F3E0}','\u{1F3E1}','\u{1F3E2}','\u{1F6CB}'+E,'\u{1FA91}','\u{1F6C1}','\u{1F527}','\u{1F528}','\u{1F4A1}','\u{1F50C}'] },
-    { label: 'Transport',     icons: ['\u{1F697}','\u{1F695}','\u{1F699}','\u{1F68C}','\u{2708}'+E,'\u{1F682}','\u{1F6A2}','\u{1F6F5}','\u{1F6B2}','\u{26FD}'+E] },
-    { label: 'Food',          icons: ['\u{1F354}','\u{1F355}','\u{1F363}','\u{1F35C}','\u{1F32E}','\u{1F371}','\u{1F957}','\u{1F369}','\u{2615}','\u{1F37A}'] },
-    { label: 'Health',        icons: ['\u{1F3E5}','\u{1F48A}','\u{1FA7A}','\u{1F3CB}'+E,'\u{1F9D8}','\u{1F3C3}','\u{26BD}'+E,'\u{1F3C0}','\u{1F3BE}','\u{1FA79}'] },
-    { label: 'Entertainment', icons: ['\u{1F3AE}','\u{1F3AC}','\u{1F3B5}','\u{1F3AD}','\u{1F3A8}','\u{1F4DA}','\u{1F4FA}','\u{1F3A4}','\u{1F3A7}','\u{1F3B2}'] },
-    { label: 'Shopping',      icons: ['\u{1F6CD}'+E,'\u{1F457}','\u{1F460}','\u{1F45F}','\u{1F45C}','\u{1F48D}','\u{231A}'+E,'\u{1F4F1}','\u{1F4BB}','\u{1F381}'] },
-    { label: 'Work',          icons: ['\u{1F4BC}','\u{1F393}','\u{270F}'+E,'\u{1F4DD}','\u{1F4CB}','\u{1F4CC}','\u{1F4CE}','\u{1F5C2}'+E,'\u{1F52C}','\u{1F4D0}'] },
-    { label: 'Travel',        icons: ['\u{1F30D}','\u{1F5FA}'+E,'\u{1F3D6}'+E,'\u{1F3D4}'+E,'\u{1F3D5}'+E,'\u{1F334}','\u{1F5FC}','\u{1F3F0}','\u{1F305}','\u{1F9F3}'] },
-    { label: 'Other',         icons: ['\u{2B50}','\u{2764}'+E,'\u{1F514}','\u{1F389}','\u{1F43E}','\u{1F331}','\u{2600}'+E,'\u{26A1}'+E,'\u{1F525}','\u{1F340}'] },
+  readonly lucideIconGroups = [
+    { label: 'Finanças',    icons: ['wallet','creditCard','banknote','trendingUp','trendingDown','coins','landmark','chartColumn','piggyBank','dollarSign'] },
+    { label: 'Casa',        icons: ['home','sofa','hammer','wrench','zap','flame','shield','key','lock','tv'] },
+    { label: 'Transporte',  icons: ['car','plane','trainFront','bike','busFront','ship','truck','fuel','navigation','mapPin'] },
+    { label: 'Alimentação', icons: ['utensils','utensilsCrossed','coffee','wine','apple','pizza','cake','shoppingCart','tag','package'] },
+    { label: 'Saúde',       icons: ['heart','dumbbell','activity','brain','stethoscope','pill','heartPulse','syringe','eye','baby'] },
+    { label: 'Lazer',       icons: ['gamepad2','clapperboard','music','palette','bookOpen','mic','headphones','ticket','camera','sparkles'] },
+    { label: 'Compras',     icons: ['shoppingBag','shirt','watch','smartphone','laptop','gem','gift','monitor','star','backpack'] },
+    { label: 'Trabalho',    icons: ['briefcase','graduationCap','pencil','fileText','mail','phone','code','bell','smile','globe'] },
+    { label: 'Viagem',      icons: ['map','mountain','compass','sun','moon','umbrella','leaf','cloud','pawPrint','flag'] },
   ];
 
   presetColors = [
@@ -52,11 +67,17 @@ export class CategoryListComponent implements OnInit {
     '#f43f5e','#64748b','#78716c','#1e2139',
   ];
 
-  get filteredIcons(): string[] {
-    return this.iconGroups.find(g => g.label === this.activeIconGroup)?.icons ?? [];
+  get currentIcons(): string[] {
+    return this.lucideIconGroups.find(g => g.label === this.activeIconGroup)?.icons ?? [];
   }
 
-  constructor(private categoryService: CategoryService, private fb: FormBuilder) {
+  isLucideIcon(icon: string): boolean { return LUCIDE_ICON_NAMES.has(icon); }
+
+  constructor(
+    private categoryService: CategoryService,
+    private fb: FormBuilder,
+    public lang: LanguageService
+  ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       type: ['expense', Validators.required]
@@ -92,10 +113,10 @@ export class CategoryListComponent implements OnInit {
     this.editMode = false;
     this.editingId = '';
     this.selectedType = 'expense';
-    this.selectedIcon = '\u{1F4B0}';
+    this.selectedIcon = 'wallet';
     this.selectedColor = '#667eea';
     this.customColor = '#667eea';
-    this.activeIconGroup = 'Finance';
+    this.activeIconGroup = 'Finanças';
     this.errorMessage = '';
     this.form.reset({ type: 'expense' });
   }

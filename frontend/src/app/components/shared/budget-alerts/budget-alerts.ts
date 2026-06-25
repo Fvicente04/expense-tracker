@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { BudgetService } from '../../../services/budget';
 import { Budget } from '../../../models/budget';
+import { LucideIconComponent, LUCIDE_ICON_NAMES } from '../lucide-icon';
 
 interface BudgetAlert {
   budget: Budget;
@@ -13,7 +14,7 @@ interface BudgetAlert {
 
 @Component({
   selector: 'app-budget-alerts',
-  imports: [CommonModule],
+  imports: [CommonModule, LucideIconComponent],
   templateUrl: './budget-alerts.html',
   styleUrl: './budget-alerts.css'   // singular
 })
@@ -62,6 +63,8 @@ export class BudgetAlertsComponent implements OnInit {
       error: () => this.isLoading = false
     });
   }
+
+  isLucideIcon(icon: string): boolean { return LUCIDE_ICON_NAMES.has(icon); }
 
   dismissAlert(i: number): void {
     this.alerts.splice(i, 1);

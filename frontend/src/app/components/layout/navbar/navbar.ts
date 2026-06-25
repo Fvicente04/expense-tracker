@@ -5,10 +5,45 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth';
 import { ThemeService } from '../../../services/theme';
+import { TranslatePipe } from '../../../pipes/translate.pipe';
+import {
+  LucideLayoutDashboard,
+  LucideArrowLeftRight,
+  LucideTag,
+  LucideWallet,
+  LucideTarget,
+  LucideChartColumn,
+  LucideSettings2,
+  LucideMoon,
+  LucideSun,
+  LucideLogOut,
+  LucideCamera,
+  LucideChevronUp,
+  LucideCreditCard,
+  LucideLandmark,
+  LucideShuffle,
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslatePipe,
+    LucideLayoutDashboard,
+    LucideArrowLeftRight,
+    LucideTag,
+    LucideWallet,
+    LucideTarget,
+    LucideChartColumn,
+    LucideSettings2,
+    LucideMoon,
+    LucideSun,
+    LucideLogOut,
+    LucideCreditCard,
+    LucideLandmark,
+    LucideShuffle,
+  ],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })

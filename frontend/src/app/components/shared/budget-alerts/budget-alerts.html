@@ -1,58 +1,64 @@
-<div class="alerts-container" *ngIf="!isLoading && showAlerts && alerts.length > 0">
+@if (!isLoading && showAlerts && alerts.length > 0) {
+  <div class="alerts-container">
 
-  <div class="alerts-header">
-    <div class="alerts-title">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 2L1.5 13H14.5L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M8 6.5V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M8 11H8.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <span>{{ alerts.length }} budget alert{{ alerts.length > 1 ? 's' : '' }} this month</span>
+    <div class="alerts-header">
+      <div class="alerts-title">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2L1.5 13H14.5L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 6.5V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M8 11H8.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>{{ alerts.length }} budget alert{{ alerts.length > 1 ? 's' : '' }} this month</span>
+      </div>
+      <button class="dismiss-all-btn" (click)="closeAllAlerts()">Dismiss all</button>
     </div>
-    <button class="dismiss-all-btn" (click)="closeAllAlerts()">Dismiss all</button>
-  </div>
 
-  <div class="alerts-list">
-    <div *ngFor="let alert of alerts; let i = index" class="alert-item" [class]="'alert-' + alert.status">
+    <div class="alerts-list">
+      @for (alert of alerts; track $index) {
+        <div class="alert-item" [class]="'alert-' + alert.status">
 
-      <div class="alert-category-icon" [style.background]="(alert.budget.category?.color || '#6b7280') + '20'">
-        <span [style.color]="alert.budget.category?.color || '#6b7280'">
-          {{ alert.budget.category?.icon || '&#x1F4B0;' }}
-        </span>
-      </div>
-
-      <div class="alert-body">
-        <div class="alert-top">
-          <span class="alert-name">{{ alert.budget.category?.name || 'Unknown' }}</span>
-          <span class="alert-badge" [class]="'badge-' + alert.status">
-            {{ alert.status === 'exceeded' ? 'Exceeded' : alert.status === 'danger' ? 'Critical' : 'Warning' }}
-          </span>
-        </div>
-        <p class="alert-message">{{ alert.message }}</p>
-        <div class="alert-progress-track">
-          <div class="alert-progress-fill"
-            [class]="'fill-' + alert.status"
-            [style.width.%]="alert.percentage > 100 ? 100 : alert.percentage">
+          <div class="alert-category-icon" [style.background]="(alert.budget.category?.color || '#6b7280') + '20'" [style.color]="alert.budget.category?.color || '#6b7280'">
+            @if (isLucideIcon(alert.budget.category?.icon || '')) {
+              <app-lucide-icon [name]="alert.budget.category?.icon || ''" [size]="18" [strokeWidth]="1.5"></app-lucide-icon>
+            } @else {
+              <span>{{ alert.budget.category?.icon || '💰' }}</span>
+            }
           </div>
-        </div>
-      </div>
 
-      <button class="dismiss-btn" (click)="dismissAlert(i)" title="Dismiss">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M11 3L3 11M3 3L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <div class="alert-body">
+            <div class="alert-top">
+              <span class="alert-name">{{ alert.budget.category?.name || 'Unknown' }}</span>
+              <span class="alert-badge" [class]="'badge-' + alert.status">
+                {{ alert.status === 'exceeded' ? 'Exceeded' : alert.status === 'danger' ? 'Critical' : 'Warning' }}
+              </span>
+            </div>
+            <p class="alert-message">{{ alert.message }}</p>
+            <div class="alert-progress-track">
+              <div class="alert-progress-fill"
+                [class]="'fill-' + alert.status"
+                [style.width.%]="alert.percentage > 100 ? 100 : alert.percentage">
+              </div>
+            </div>
+          </div>
+
+          <button class="dismiss-btn" (click)="dismissAlert($index)" title="Dismiss">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M11 3L3 11M3 3L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+
+        </div>
+      }
+    </div>
+
+    <div class="alerts-footer">
+      <button class="btn-primary" (click)="goToBudgets()">
+        View All Budgets
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-
     </div>
-  </div>
 
-  <div class="alerts-footer">
-    <button class="btn-primary" (click)="goToBudgets()">
-      View All Budgets
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
   </div>
-
-</div>
+}

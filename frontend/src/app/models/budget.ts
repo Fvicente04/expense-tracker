@@ -13,6 +13,7 @@ export interface Budget {
     color: string;
     type: 'income' | 'expense';
   };
+  recurring?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -22,4 +23,5 @@ export interface CreateBudgetRequest {
   amount: number;
   month: number;
   year: number;
+  recurring?: boolean;
 }

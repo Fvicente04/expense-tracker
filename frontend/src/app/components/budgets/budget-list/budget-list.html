@@ -2,13 +2,13 @@
   <div class="page-header">
     <div class="header-content">
       <div class="header-left">
-        <h1 class="page-title">Budgets</h1>
+        <h1 class="page-title">{{ 'budgets.title' | translate }}</h1>
       </div>
-      <button class="btn-primary" (click)="openModal()">
+      <button class="btn-outline" (click)="openModal()">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span>New Budget</span>
+        <span>{{ 'budgets.new' | translate }}</span>
       </button>
     </div>
   </div>
@@ -40,7 +40,7 @@
           </svg>
         </div>
         <div class="summary-info">
-          <p class="summary-label">Total Budgeted</p>
+          <p class="summary-label">{{ 'budgets.totalBudgeted' | translate }}</p>
           <h3 class="summary-value">&#x20AC;{{ totalBudgeted().toFixed(2) }}</h3>
         </div>
       </div>
@@ -53,7 +53,7 @@
           </svg>
         </div>
         <div class="summary-info">
-          <p class="summary-label">Total Spent</p>
+          <p class="summary-label">{{ 'budgets.totalSpent' | translate }}</p>
           <h3 class="summary-value">&#x20AC;{{ totalSpent().toFixed(2) }}</h3>
         </div>
       </div>
@@ -66,7 +66,7 @@
           </svg>
         </div>
         <div class="summary-info">
-          <p class="summary-label">Remaining</p>
+          <p class="summary-label">{{ 'budgets.remaining' | translate }}</p>
           <h3 class="summary-value" [class.negative]="totalRemaining() < 0">
             &#x20AC;{{ totalRemaining().toFixed(2) }}
           </h3>
@@ -74,238 +74,307 @@
       </div>
     </div>
 
-    <div class="pace-banner" *ngIf="isCurrent() && filteredBudgets().length > 0">
-      <div class="pace-month-progress">
-        <div class="pace-labels">
-          <span>Day {{ daysElapsed() }} of {{ daysInMonth() }}</span>
-          <span>{{ daysInMonth() - daysElapsed() }} days left</span>
-        </div>
-        <div class="pace-track">
-          <div class="pace-fill month" [style.width.%]="monthPct()"></div>
-          <div class="pace-fill spent"
-            [style.width.%]="totalBudgeted() > 0 ? (totalSpent() / totalBudgeted() * 100) : 0"
-            [class.over]="overallPace() > 10">
+    @if (isCurrent() && filteredBudgets().length > 0) {
+      <div class="pace-banner">
+        <div class="pace-month-progress">
+          <div class="pace-labels">
+            <span>{{ 'budgets.daysElapsed' | translate:{elapsed: daysElapsed(), total: daysInMonth()} }}</span>
+            <span>{{ 'budgets.daysLeft' | translate:{days: daysInMonth() - daysElapsed()} }}</span>
+          </div>
+          <div class="pace-track">
+            <div class="pace-fill month" [style.width.%]="monthPct()"></div>
+            <div class="pace-fill spent"
+              [style.width.%]="totalBudgeted() > 0 ? (totalSpent() / totalBudgeted() * 100) : 0"
+              [class.over]="overallPace() > 10">
+            </div>
+          </div>
+          <div class="pace-legend">
+            <span class="pace-dot month"></span>
+            <span>{{ 'budgets.monthElapsed' | translate:{pct: monthPct()} }}</span>
+            <span class="pace-dot spent" [class.over]="overallPace() > 10"></span>
+            <span>{{ 'budgets.budgetUsed' | translate:{pct: (totalBudgeted() > 0 ? (totalSpent() / totalBudgeted() * 100).toFixed(0) : 0)} }}</span>
           </div>
         </div>
-        <div class="pace-legend">
-          <span class="pace-dot month"></span>
-          <span>Month elapsed ({{ monthPct() }}%)</span>
-          <span class="pace-dot spent" [class.over]="overallPace() > 10"></span>
-          <span>Budget used ({{ totalBudgeted() > 0 ? (totalSpent() / totalBudgeted() * 100).toFixed(0) : 0 }}%)</span>
+
+        <div class="pace-verdict"
+          [class.ahead]="overallPace() > 10"
+          [class.under]="overallPace() < -10">
+          @if (overallPace() > 10) {
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ 'budgets.abovePace' | translate }}
+          } @else if (overallPace() < -10) {
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ 'budgets.belowPace' | translate }}
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+              <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ 'budgets.onTrack' | translate }}
+          }
         </div>
       </div>
+    }
 
-      <div class="pace-verdict"
-        [class.ahead]="overallPace() > 10"
-        [class.under]="overallPace() < -10">
-        <ng-container *ngIf="overallPace() > 10">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M10 5V15M10 15L15 10M10 15L5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Spending above expected pace
-        </ng-container>
-        <ng-container *ngIf="overallPace() < -10">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Spending below expected pace
-        </ng-container>
-        <ng-container *ngIf="overallPace() >= -10 && overallPace() <= 10">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          Spending on track
-        </ng-container>
+    @if (isLoading) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>{{ 'budgets.loading' | translate }}</p>
       </div>
-    </div>
+    }
 
-    <div *ngIf="isLoading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Loading budgets...</p>
-    </div>
+    @if (errorMessage && !isLoading) {
+      <div class="error-banner">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
 
-    <div *ngIf="errorMessage && !isLoading" class="error-banner">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span>{{ errorMessage }}</span>
-    </div>
+    @if (!isLoading && filteredBudgets().length > 0) {
+      <div class="section-card">
+        <div class="budgets-grid">
+          @for (budget of filteredBudgets(); track budget.id) {
+            <div class="budget-card">
 
-    <div *ngIf="!isLoading && filteredBudgets().length > 0" class="section-card">
-      <div class="budgets-grid">
-        <div class="budget-card" *ngFor="let budget of filteredBudgets()">
-
-          <div class="budget-header">
-            <div class="category-info">
-              <div class="category-icon" [style.background]="(budget.category?.color || '#667eea') + '20'">
-                {{ budget.category?.icon || '&#x1F4B0;' }}
+              <div class="budget-header">
+                <div class="category-info">
+                  <div class="category-icon" [style.background]="(budget.category?.color || '#667eea') + '20'" [style.color]="budget.category?.color || '#667eea'">
+                    @if (isLucideIcon(budget.category?.icon || '')) {
+                      <app-lucide-icon [name]="budget.category?.icon || ''" [size]="20" [strokeWidth]="1.5"></app-lucide-icon>
+                    } @else {
+                      <span>{{ budget.category?.icon || '💰' }}</span>
+                    }
+                  </div>
+                  <div>
+                    <h3>
+                      {{ budget.category?.name || 'Unknown' }}
+                      @if (budget.recurring) {
+                        <span class="recurring-chip" title="{{ 'budgets.recurring' | translate }}">↻</span>
+                      }
+                    </h3>
+                    <p class="budget-period">{{ monthName() }} {{ selectedYear }}</p>
+                  </div>
+                </div>
+                <div class="budget-actions">
+                  <button class="action-btn edit" (click)="editBudget(budget)" title="Edit">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M11.333 2a1.886 1.886 0 0 1 2.667 2.667L4.833 13.833 2 14.5l.667-2.833L11.333 2z"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="action-btn delete" (click)="deleteBudget(budget.id)" title="Delete">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333A1.333 1.333 0 0 1 11.333 14.667H4.667A1.333 1.333 0 0 1 3.333 13.333V4h9.334z"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <div>
-                <h3>{{ budget.category?.name || 'Unknown' }}</h3>
-                <p class="budget-period">{{ monthName() }} {{ selectedYear }}</p>
+
+              <div class="budget-progress">
+                <div class="progress-info">
+                  <span class="spent">&#x20AC;{{ fmt(budget.spent) }}</span>
+                  <span class="total">{{ 'budgets.of' | translate }} &#x20AC;{{ fmt(budget.amount) }}</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill"
+                    [style.width.%]="progressPct(budget)"
+                    [style.background]="progressColor(budget)">
+                  </div>
+                </div>
+                <div class="progress-footer">
+                  <span class="percentage">{{ progressPct(budget).toFixed(0) }}%</span>
+                  <span class="status-badge" [style.color]="progressColor(budget)">{{ statusText(budget) | translate }}</span>
+                </div>
+
+                <div class="budget-remaining"
+                  [class.remaining-ok]="(budget.amount - (budget.spent || 0)) >= 0"
+                  [class.remaining-over]="(budget.amount - (budget.spent || 0)) < 0">
+                  <span class="remaining-label">{{ 'budgets.remaining' | translate }}</span>
+                  <span class="remaining-value">&#x20AC;{{ (budget.amount - (budget.spent || 0)).toFixed(2) }}</span>
+                </div>
               </div>
-            </div>
-            <div class="budget-actions">
-              <button class="action-btn edit" (click)="editBudget(budget)" title="Edit">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M11.333 2a1.886 1.886 0 0 1 2.667 2.667L4.833 13.833 2 14.5l.667-2.833L11.333 2z"
-                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-              <button class="action-btn delete" (click)="deleteBudget(budget.id)" title="Delete">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333A1.333 1.333 0 0 1 11.333 14.667H4.667A1.333 1.333 0 0 1 3.333 13.333V4h9.334z"
-                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-          </div>
 
-          <div class="budget-progress">
-            <div class="progress-info">
-              <span class="spent">&#x20AC;{{ fmt(budget.spent) }}</span>
-              <span class="total">of &#x20AC;{{ fmt(budget.amount) }}</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill"
-                [style.width.%]="progressPct(budget)"
-                [style.background]="progressColor(budget)">
-              </div>
-            </div>
-            <div class="progress-footer">
-              <span class="percentage">{{ progressPct(budget).toFixed(0) }}%</span>
-              <span class="status-badge" [style.color]="progressColor(budget)">{{ statusText(budget) }}</span>
-            </div>
+              @if (isCurrent()) {
+                <div class="budget-pace">
+                  <div class="pace-row">
+                    <span class="pace-item">
+                      {{ 'budgets.expectedToday' | translate }} <strong>&#x20AC;{{ expectedSpend(budget).toFixed(2) }}</strong>
+                    </span>
+                    <span class="pace-tag"
+                      [class.pace-ahead]="paceStatus(budget) === 'ahead'"
+                      [class.pace-on-track]="paceStatus(budget) === 'on-track'"
+                      [class.pace-under]="paceStatus(budget) === 'under'">
+                      @if (paceStatus(budget) === 'ahead') {
+                        {{ 'budgets.abovePaceTag' | translate }}
+                      } @else if (paceStatus(budget) === 'on-track') {
+                        {{ 'budgets.onTrackTag' | translate }}
+                      } @else {
+                        {{ 'budgets.underPaceTag' | translate }}
+                      }
+                    </span>
+                  </div>
+                  @if (daysToOverage(budget) !== null && daysToOverage(budget)! <= 10 && progressPct(budget) < 100) {
+                    <p class="pace-overage">
+                      &#x26A0;&#xFE0F; {{ 'budgets.exceededSoon' | translate:{days: (daysToOverage(budget) ?? 0)} }}
+                    </p>
+                  }
+                  @if (progressPct(budget) >= 100) {
+                    <p class="pace-overage exceeded">
+                      {{ 'budgets.exceeded' | translate }}
+                    </p>
+                  }
+                </div>
+              }
 
-            <div class="budget-remaining"
-              [class.remaining-ok]="(budget.amount - (budget.spent || 0)) >= 0"
-              [class.remaining-over]="(budget.amount - (budget.spent || 0)) < 0">
-              <span class="remaining-label">Remaining</span>
-              <span class="remaining-value">&#x20AC;{{ (budget.amount - (budget.spent || 0)).toFixed(2) }}</span>
             </div>
-          </div>
-
-          <div class="budget-pace" *ngIf="isCurrent()">
-            <div class="pace-row">
-              <span class="pace-item">
-                Expected by today: <strong>&#x20AC;{{ expectedSpend(budget).toFixed(2) }}</strong>
-              </span>
-              <span class="pace-tag"
-                [class.pace-ahead]="paceStatus(budget) === 'ahead'"
-                [class.pace-on-track]="paceStatus(budget) === 'on-track'"
-                [class.pace-under]="paceStatus(budget) === 'under'">
-                <ng-container *ngIf="paceStatus(budget) === 'ahead'">Above pace</ng-container>
-                <ng-container *ngIf="paceStatus(budget) === 'on-track'">On track</ng-container>
-                <ng-container *ngIf="paceStatus(budget) === 'under'">Under pace</ng-container>
-              </span>
-            </div>
-            <p class="pace-overage"
-              *ngIf="daysToOverage(budget) !== null && daysToOverage(budget)! <= 10 && progressPct(budget) < 100">
-              &#x26A0;&#xFE0F; At this rate, budget exceeded in <strong>{{ daysToOverage(budget) }} day(s)</strong>
-            </p>
-            <p class="pace-overage exceeded" *ngIf="progressPct(budget) >= 100">
-              Budget exceeded this month
-            </p>
-          </div>
-
+          }
         </div>
       </div>
-    </div>
+    }
 
-    <div *ngIf="!isLoading && filteredBudgets().length === 0" class="section-card">
-      <div class="empty-state">
-        <div class="empty-icon">
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <path d="M32 8V56M40 16H26C23.7909 16 21.6726 16.8482 20.1714 18.3484C18.6701 19.8487 17.8219 21.967 17.8219 24.1761C17.8219 26.3852 18.6701 28.5035 20.1714 30.0037C21.6726 31.504 23.7909 32.3522 26 32.3522H38C40.2091 32.3522 42.3274 33.2004 43.8286 34.7007C45.3299 36.2009 46.1781 38.3192 46.1781 40.5283C46.1781 42.7374 45.3299 44.8557 43.8286 46.3559C42.3274 47.8562 40.2091 48.7044 38 48.7044H16"
-              stroke="#6b7280" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3>No budgets for {{ monthName() }} {{ selectedYear }}</h3>
-        <p>Use the <strong>New Budget</strong> button above to set spending limits per category.</p>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2 class="modal-title">{{ editMode ? 'Edit Budget' : 'Add Budget' }}</h2>
-        <button class="close-btn" (click)="closeModal()">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
+    @if (!isLoading && filteredBudgets().length === 0 && recurringAvailable() > 0) {
+      <div class="rollover-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{{ 'budgets.rolloverBanner' | translate:{n: recurringAvailable()} }}</span>
+        <button class="rollover-btn" (click)="rollover()" [disabled]="isRollingOver">
+          {{ (isRollingOver ? 'budgets.rollingOver' : 'budgets.rolloverBtn') | translate }}
         </button>
       </div>
+    }
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="modal-body">
-
-          <div *ngIf="errorMessage" class="error-banner">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    @if (!isLoading && filteredBudgets().length === 0) {
+      <div class="section-card">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <path d="M32 8V56M40 16H26C23.7909 16 21.6726 16.8482 20.1714 18.3484C18.6701 19.8487 17.8219 21.967 17.8219 24.1761C17.8219 26.3852 18.6701 28.5035 20.1714 30.0037C21.6726 31.504 23.7909 32.3522 26 32.3522H38C40.2091 32.3522 42.3274 33.2004 43.8286 34.7007C45.3299 36.2009 46.1781 38.3192 46.1781 40.5283C46.1781 42.7374 45.3299 44.8557 43.8286 46.3559C42.3274 47.8562 40.2091 48.7044 38 48.7044H16"
+                stroke="#6b7280" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>{{ errorMessage }}</span>
           </div>
-
-          <div class="form-group">
-            <label for="categoryId">Category</label>
-            <select id="categoryId" formControlName="categoryId"
-              [class.error]="form.get('categoryId')?.touched && form.get('categoryId')?.invalid">
-              <option value="">Select a category...</option>
-              <option *ngFor="let category of categories" [value]="category.id">
-                {{ category.icon }} {{ category.name }}
-              </option>
-            </select>
-            <span class="error-message" *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']">
-              Category is required
-            </span>
-          </div>
-
-          <div class="form-group">
-            <label for="amount">Budget Amount (&#x20AC;)</label>
-            <input type="number" id="amount" formControlName="amount"
-              step="0.01" min="0.01" placeholder="0.00"
-              [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid"/>
-            <span class="error-message" *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['required']">Amount is required</span>
-            <span class="error-message" *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.['min']">Amount must be greater than 0</span>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="month">Month</label>
-              <select id="month" formControlName="month"
-                [class.error]="form.get('month')?.touched && form.get('month')?.invalid">
-                <option *ngFor="let m of months" [value]="m.value">{{ m.label }}</option>
-              </select>
-              <span class="error-message" *ngIf="form.get('month')?.touched && form.get('month')?.errors?.['required']">Month is required</span>
-            </div>
-            <div class="form-group">
-              <label for="year">Year</label>
-              <select id="year" formControlName="year"
-                [class.error]="form.get('year')?.touched && form.get('year')?.invalid">
-                <option [value]="currentYear - 1">{{ currentYear - 1 }}</option>
-                <option [value]="currentYear">{{ currentYear }}</option>
-                <option [value]="currentYear + 1">{{ currentYear + 1 }}</option>
-              </select>
-              <span class="error-message" *ngIf="form.get('year')?.touched && form.get('year')?.errors?.['required']">Year is required</span>
-            </div>
-          </div>
-
+          <h3>{{ 'budgets.noFor' | translate }} {{ monthName() }} {{ selectedYear }}</h3>
+          <p>{{ 'budgets.noDesc' | translate }}</p>
         </div>
+      </div>
+    }
 
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn-primary" [disabled]="isLoading">
-            <span *ngIf="!isLoading">{{ editMode ? 'Update Budget' : 'Create Budget' }}</span>
-            <span *ngIf="isLoading">{{ editMode ? 'Updating...' : 'Creating...' }}</span>
+  </div>
+
+  @if (showModal) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ (editMode ? 'budgets.editTitle' : 'budgets.addTitle') | translate }}</h2>
+          <button class="close-btn" (click)="closeModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
-      </form>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="modal-body">
+
+            @if (errorMessage) {
+              <div class="error-banner">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>{{ errorMessage }}</span>
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="categoryId">{{ 'budgets.category' | translate }}</label>
+              <select id="categoryId" formControlName="categoryId"
+                [class.error]="form.get('categoryId')?.touched && form.get('categoryId')?.invalid">
+                <option value="">{{ 'budgets.selectCategory' | translate }}</option>
+                @for (category of categories; track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
+                }
+              </select>
+              @if (form.get('categoryId')?.touched && form.get('categoryId')?.errors?.['required']) {
+                <span class="error-message">{{ 'budgets.categoryRequired' | translate }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="amount">{{ 'budgets.amount' | translate }} (&#x20AC;)</label>
+              <input type="number" id="amount" formControlName="amount"
+                step="0.01" min="0.01" placeholder="0.00"
+                [class.error]="form.get('amount')?.touched && form.get('amount')?.invalid"/>
+              @if (form.get('amount')?.touched && form.get('amount')?.errors?.['required']) {
+                <span class="error-message">{{ 'budgets.amountRequired' | translate }}</span>
+              }
+              @if (form.get('amount')?.touched && form.get('amount')?.errors?.['min']) {
+                <span class="error-message">{{ 'budgets.amountMin' | translate }}</span>
+              }
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="month">{{ 'budgets.month' | translate }}</label>
+                <select id="month" formControlName="month"
+                  [class.error]="form.get('month')?.touched && form.get('month')?.invalid">
+                  @for (m of months; track m.value) {
+                    <option [value]="m.value">{{ localeMonthName(m.value) }}</option>
+                  }
+                </select>
+                @if (form.get('month')?.touched && form.get('month')?.errors?.['required']) {
+                  <span class="error-message">{{ 'budgets.monthRequired' | translate }}</span>
+                }
+              </div>
+              <div class="form-group">
+                <label for="year">{{ 'budgets.year' | translate }}</label>
+                <select id="year" formControlName="year"
+                  [class.error]="form.get('year')?.touched && form.get('year')?.invalid">
+                  <option [value]="currentYear - 1">{{ currentYear - 1 }}</option>
+                  <option [value]="currentYear">{{ currentYear }}</option>
+                  <option [value]="currentYear + 1">{{ currentYear + 1 }}</option>
+                </select>
+                @if (form.get('year')?.touched && form.get('year')?.errors?.['required']) {
+                  <span class="error-message">{{ 'budgets.yearRequired' | translate }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="recurring-toggle" (click)="form.patchValue({recurring: !form.get('recurring')?.value})">
+              <label class="toggle-switch" (click)="$event.stopPropagation()">
+                <input type="checkbox" formControlName="recurring" />
+                <span class="toggle-slider"></span>
+              </label>
+              <div class="recurring-labels">
+                <span class="recurring-title">{{ 'budgets.recurring' | translate }}</span>
+                <span class="recurring-desc">{{ 'budgets.recurringDesc' | translate }}</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeModal()">{{ 'budgets.cancel' | translate }}</button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading">
+              @if (!isLoading) {
+                <span>{{ (editMode ? 'budgets.update' : 'budgets.create') | translate }}</span>
+              } @else {
+                <span>{{ (editMode ? 'budgets.updating' : 'budgets.creating') | translate }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  }
 
 </app-navbar>

@@ -12,9 +12,12 @@ export interface Transaction {
     icon: string;
     color: string;
   };
+  creditCardId?: string | null;
+  source?: 'manual' | 'bank_sync';
+  bankConnectionId?: string | null;
   // Recurring fields
   isRecurring?: boolean;
-  recurringFrequency?: 'weekly' | 'monthly' | 'yearly' | null;
+  recurringFrequency?: 'weekly' | 'biweekly' | 'monthly' | null;
   recurringEndDate?: string | null;
   recurringGroupId?: string | null;
 }
@@ -27,7 +30,7 @@ export interface CreateTransactionRequest {
   categoryId: string;
   notes?: string;
   isRecurring?: boolean;
-  recurringFrequency?: 'weekly' | 'monthly' | 'yearly' | null;
+  recurringFrequency?: 'weekly' | 'biweekly' | 'monthly' | null;
   recurringEndDate?: string | null;
 }
 
@@ -38,4 +41,6 @@ export interface UpdateTransactionRequest {
   date?: string;
   categoryId?: string;
   notes?: string;
+  recurringFrequency?: 'weekly' | 'biweekly' | 'monthly' | null;
+  recurringEndDate?: string | null;
 }
