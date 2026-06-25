@@ -21,7 +21,7 @@ const Goal = sequelize.define('Goal', {
     validate: { notEmpty: true, len: [1, 100] }
   },
   icon: {
-    type: DataTypes.STRING(10),
+    type: DataTypes.STRING(50),
     allowNull: false,
     defaultValue: '💰'
   },
