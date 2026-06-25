@@ -1,0 +1,302 @@
+<app-navbar>
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">{{ 'goals.title' | translate }}</h1>
+      <button class="btn-outline" (click)="openModal()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>{{ 'goals.new' | translate }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-icon green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2V22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">{{ 'goals.totalSaved' | translate }}</p>
+          <h3 class="summary-value">&#x20AC;{{ totalSaved().toFixed(2) }}</h3>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">{{ 'goals.totalTarget' | translate }}</p>
+          <h3 class="summary-value">&#x20AC;{{ totalTarget().toFixed(2) }}</h3>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon gold">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">{{ 'goals.achieved' | translate }}</p>
+          <h3 class="summary-value">{{ totalAchieved() }} / {{ goals.length }}</h3>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>{{ 'goals.loading' | translate }}</p>
+      </div>
+    }
+
+    @if (errorMessage && !isLoading) {
+      <div class="error-banner">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    @if (!isLoading && goals.length > 0) {
+      <div class="goals-grid">
+        @for (goal of goals; track goal.id) {
+          <div class="goal-card" [class.completed]="progressPct(goal) >= 100">
+
+            <div class="goal-header">
+              <div class="goal-icon-wrap" [style.background]="progressColor(goal) + '18'" [style.color]="progressColor(goal)">
+                @if (isLucideIcon(goal.icon)) {
+                  <app-lucide-icon [name]="goal.icon" [size]="24" [strokeWidth]="1.5"></app-lucide-icon>
+                } @else {
+                  <span class="goal-icon">{{ goal.icon }}</span>
+                }
+              </div>
+              <div class="goal-title-block">
+                <h3 class="goal-name">{{ goal.name }}</h3>
+                @if (monthsLeft(goal) !== null && monthsLeft(goal)! > 0) {
+                  <span class="goal-deadline">
+                    {{ 'goals.monthsLeft' | translate:{ n: (monthsLeft(goal) ?? 0) } }}
+                  </span>
+                }
+                @if (monthsLeft(goal) !== null && monthsLeft(goal)! <= 0 && progressPct(goal) < 100) {
+                  <span class="goal-deadline overdue">
+                    {{ 'goals.overdue' | translate }}
+                  </span>
+                }
+                @if (!goal.deadline) {
+                  <span class="goal-deadline muted">
+                    {{ 'goals.noDeadline' | translate }}
+                  </span>
+                }
+              </div>
+              <div class="goal-actions">
+                <button class="action-btn edit" (click)="openEditModal(goal)" title="Edit">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                    <path d="M11.333 2a1.886 1.886 0 0 1 2.667 2.667L4.833 13.833 2 14.5l.667-2.833L11.333 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <button class="action-btn delete" (click)="deleteGoal(goal.id)" title="Delete">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333A1.333 1.333 0 0 1 11.333 14.667H4.667A1.333 1.333 0 0 1 3.333 13.333V4h9.334z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="goal-amounts">
+              <span class="saved-amount">&#x20AC;{{ fmt(goal.savedAmount) }}</span>
+              <span class="target-amount">{{ 'goals.of' | translate }} &#x20AC;{{ fmt(goal.targetAmount) }}</span>
+            </div>
+
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill"
+                [style.width.%]="progressPct(goal)"
+                [style.background]="progressColor(goal)">
+              </div>
+            </div>
+
+            <div class="goal-footer">
+              <span class="goal-pct" [style.color]="progressColor(goal)">{{ progressPct(goal).toFixed(0) }}%</span>
+
+              @if (neededPerMonth(goal) !== null && neededPerMonth(goal)! > 0) {
+                <span class="goal-needed">
+                  {{ 'goals.neededPerMonth' | translate:{ sym: '€', amount: fmt(neededPerMonth(goal)) } }}
+                </span>
+              }
+              @if (progressPct(goal) >= 100) {
+                <span class="goal-achieved-badge">&#x2B50; {{ 'goals.completed' | translate }}</span>
+              }
+            </div>
+
+            @if (progressPct(goal) < 100) {
+              <button class="deposit-btn" (click)="openDeposit(goal)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                {{ 'goals.deposit' | translate }}
+              </button>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
+    @if (!isLoading && goals.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="28" stroke="#d1d5db" stroke-width="3"/>
+            <path d="M32 18v14l9 5" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"/>
+            <path d="M32 10V6M32 58v-4M10 32H6M58 32h-4" stroke="#d1d5db" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>{{ 'goals.noGoals' | translate }}</h3>
+        <p>{{ 'goals.noGoalsDesc' | translate }}</p>
+      </div>
+    }
+
+  </div>
+
+  @if (showModal) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ (editMode ? 'goals.editTitle' : 'goals.addTitle') | translate }}</h2>
+          <button class="close-btn" (click)="closeModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="modal-body">
+
+            @if (errorMessage) {
+              <div class="error-banner small">
+                <span>{{ errorMessage }}</span>
+              </div>
+            }
+
+            <div class="form-group">
+              <label>{{ 'goals.name' | translate }}</label>
+              <input type="text" formControlName="name"
+                lang="pt-BR" spellcheck="true" autocorrect="on"
+                [placeholder]="'goals.namePlaceholder' | translate"
+                [class.error]="form.get('name')?.touched && form.get('name')?.invalid"/>
+              @if (form.get('name')?.touched && form.get('name')?.errors?.['required']) {
+                <span class="error-message">{{ 'goals.nameRequired' | translate }}</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label>{{ 'goals.icon' | translate }}</label>
+              <div class="icon-group-tabs">
+                @for (group of lucideIconGroups; track group.label) {
+                  <button type="button" class="icon-group-tab"
+                    [class.active]="activeIconGroup === group.label" (click)="activeIconGroup = group.label">
+                    {{ group.label }}
+                  </button>
+                }
+              </div>
+              <div class="icon-grid-wrapper">
+                <div class="icon-grid">
+                  @for (icon of currentIcons; track icon) {
+                    <button type="button" class="icon-btn"
+                      [class.active]="form.get('icon')?.value === icon"
+                      (click)="form.patchValue({ icon: icon })"
+                      [style.color]="form.get('icon')?.value === icon ? '#667eea' : null">
+                      <app-lucide-icon [name]="icon" [size]="20" [strokeWidth]="1.5"></app-lucide-icon>
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'goals.targetAmount' | translate }} (&#x20AC;)</label>
+                <input type="number" formControlName="targetAmount" step="0.01" min="0.01" placeholder="0.00"
+                  [class.error]="form.get('targetAmount')?.touched && form.get('targetAmount')?.invalid"/>
+                @if (form.get('targetAmount')?.touched && form.get('targetAmount')?.errors?.['required']) {
+                  <span class="error-message">{{ 'goals.targetRequired' | translate }}</span>
+                }
+                @if (form.get('targetAmount')?.touched && form.get('targetAmount')?.errors?.['min']) {
+                  <span class="error-message">{{ 'goals.targetMin' | translate }}</span>
+                }
+              </div>
+              <div class="form-group">
+                <label>{{ 'goals.savedAmount' | translate }} (&#x20AC;)</label>
+                <input type="number" formControlName="savedAmount" step="0.01" min="0" placeholder="0.00"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>{{ 'goals.deadline' | translate }}</label>
+              <input type="date" formControlName="deadline"/>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="closeModal()">{{ 'goals.cancel' | translate }}</button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading">
+              @if (!isLoading) {
+                <span>{{ (editMode ? 'goals.update' : 'goals.create') | translate }}</span>
+              } @else {
+                <span>{{ (editMode ? 'goals.updating' : 'goals.creating') | translate }}</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (showDepositModal) {
+    <div class="modal-overlay" (click)="closeDeposit()">
+      <div class="modal-content deposit-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">{{ 'goals.depositTitle' | translate }}</h2>
+          <button class="close-btn" (click)="closeDeposit()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="deposit-goal-name">
+            @if (depositGoal?.icon && isLucideIcon(depositGoal!.icon)) {
+              <app-lucide-icon [name]="depositGoal!.icon" [size]="18" [strokeWidth]="1.5" style="display:inline-flex;vertical-align:middle;margin-right:4px"></app-lucide-icon>
+            } @else {
+              <span>{{ depositGoal?.icon }} </span>
+            }
+            {{ depositGoal?.name }}
+          </p>
+          <div class="form-group">
+            <label>{{ 'goals.depositAmount' | translate }} (&#x20AC;)</label>
+            <input type="number" [(ngModel)]="depositAmount" step="0.01" min="0.01" placeholder="0.00" class="deposit-input" autofocus/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeDeposit()">{{ 'goals.cancel' | translate }}</button>
+          <button type="button" class="btn-primary" (click)="confirmDeposit()" [disabled]="depositSaving || !depositAmount">
+            {{ (depositSaving ? 'goals.depositing' : 'goals.deposit') | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</app-navbar>

@@ -1,0 +1,612 @@
+<app-navbar>
+
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">{{ 'creditCards.title' | translate }}</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline" (click)="openAddCard()">
+          <svg lucidePlus [size]="18" [strokeWidth]="2.5"></svg>
+          {{ 'creditCards.addCard' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    @if (errorMessage) {
+      <div class="error-banner">
+        <svg lucideCircleAlert [size]="18" [strokeWidth]="2"></svg>
+        <span>{{ errorMessage }}</span>
+        <button class="close-inline" (click)="errorMessage=''">
+          <svg lucideX [size]="16" [strokeWidth]="2"></svg>
+        </button>
+      </div>
+    }
+
+    @if (isLoading && !cards.length) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>{{ 'creditCards.loading' | translate }}</p>
+      </div>
+    }
+
+    @if (!isLoading && !cards.length) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg lucideCreditCard [size]="52" [strokeWidth]="1.25"></svg>
+        </div>
+        <h3>{{ 'creditCards.noCards' | translate }}</h3>
+        <p>{{ 'creditCards.noCardsDesc' | translate }}</p>
+        <button class="btn-primary" (click)="openAddCard()">
+          <svg lucidePlus [size]="16" [strokeWidth]="2.5"></svg>
+          {{ 'creditCards.addCard' | translate }}
+        </button>
+      </div>
+    }
+
+    @if (cards.length) {
+      <div class="cards-grid">
+        @for (card of cards; track card.id) {
+          <div class="card-wrap" [class.expanded]="expandedCardId === card.id">
+
+            <div class="credit-card" [style.background]="'linear-gradient(135deg,'+card.color+' 0%,'+card.color+'99 100%)'"
+                 (click)="toggleExpand(card)">
+
+              <div class="card-alerts">
+                @if (card.dueAlert) {
+                  <span class="alert-badge due">
+                    <svg lucideClock [size]="11" [strokeWidth]="2.5"></svg>
+                    {{ 'creditCards.dueIn' | translate:{ n: card.daysUntilDue ?? 0 } }}
+                  </span>
+                }
+                @if (card.utilizationAlert && !card.dueAlert) {
+                  <span class="alert-badge util">
+                    <svg lucideAlertTriangle [size]="11" [strokeWidth]="2.5"></svg>
+                    {{ card.utilizationPct }}{{ 'creditCards.used' | translate }}
+                  </span>
+                }
+              </div>
+
+              <div class="card-chip">
+                <div class="chip-line"></div>
+                <div class="chip-square"></div>
+              </div>
+              <div class="card-number">{{ maskDigits(card.lastFourDigits) }}</div>
+              <div class="card-footer-row">
+                <div class="card-name">{{ card.name }}</div>
+                @if (card.dueDay) {
+                  <div class="card-meta">{{ 'creditCards.dueDayCard' | translate }} {{ card.dueDay }}</div>
+                }
+              </div>
+            </div>
+
+            <div class="card-stats">
+              <div class="stat-item">
+                <span class="stat-label">{{ 'creditCards.thisPeriod' | translate }}</span>
+                <span class="stat-value" [class.expense]="true">{{ currencySymbol }}{{ fmt(card.currentSpend) }}</span>
+              </div>
+              @if (card.creditLimit) {
+                <div class="stat-item">
+                  <span class="stat-label">{{ 'creditCards.available' | translate }}</span>
+                  <span class="stat-value" [class.danger-text]="(card.availableCredit || 0) < 0">
+                    {{ currencySymbol }}{{ fmt(card.availableCredit) }}
+                  </span>
+                </div>
+              }
+              @if (card.creditLimit) {
+                <div class="stat-item">
+                  <span class="stat-label">{{ 'creditCards.limit' | translate }}</span>
+                  <span class="stat-value">{{ currencySymbol }}{{ fmt(card.creditLimit) }}</span>
+                </div>
+              }
+              @if (card.lastPayment) {
+                <div class="stat-item">
+                  <span class="stat-label">{{ 'creditCards.lastPaid' | translate }}</span>
+                  <span class="stat-value ok">{{ currencySymbol }}{{ fmt(card.lastPayment.amount) }}</span>
+                </div>
+              }
+            </div>
+
+            @if (card.creditLimit && card.utilizationPct != null) {
+              <div class="utilization-wrap">
+                <div class="utilization-bar">
+                  <div class="utilization-fill" [class]="utilizationClass(card.utilizationPct)"
+                       [style.width.%]="Math.min(100, card.utilizationPct || 0)"></div>
+                </div>
+                <span class="utilization-label" [class]="utilizationClass(card.utilizationPct)">
+                  {{ card.utilizationPct }}%
+                </span>
+              </div>
+            }
+
+            <div class="card-actions-bar">
+              <button class="action-pill" (click)="triggerImport(card.id, $event)">
+                <svg lucideUpload [size]="13" [strokeWidth]="2"></svg> {{ 'creditCards.import' | translate }}
+              </button>
+              <button class="action-pill" (click)="openEditCard(card, $event)">
+                <svg lucidePencil [size]="13" [strokeWidth]="2"></svg> {{ 'creditCards.edit' | translate }}
+              </button>
+              <button class="action-pill danger" (click)="deleteCard(card, $event)">
+                <svg lucideTrash2 [size]="13" [strokeWidth]="2"></svg> {{ 'creditCards.delete' | translate }}
+              </button>
+              <button class="action-pill expand" (click)="toggleExpand(card)">
+                @if (expandedCardId === card.id) {
+                  <svg lucideChevronUp [size]="13" [strokeWidth]="2"></svg>
+                } @else {
+                  <svg lucideChevronDown [size]="13" [strokeWidth]="2"></svg>
+                }
+                {{ expandedCardId === card.id ? ('creditCards.hide' | translate) : ('creditCards.details' | translate) }}
+              </button>
+            </div>
+
+            @if (expandedCardId === card.id) {
+              <div class="tx-panel">
+
+                <div class="tabs-bar">
+                  <button class="tab-btn" [class.active]="activeTab==='transactions'"  (click)="setTab('transactions')">{{ 'creditCards.tabTransactions' | translate }}</button>
+                  <button class="tab-btn" [class.active]="activeTab==='history'"       (click)="setTab('history')">{{ 'creditCards.tabHistory' | translate }}</button>
+                  <button class="tab-btn" [class.active]="activeTab==='subscriptions'" (click)="setTab('subscriptions')">{{ 'creditCards.tabSubscriptions' | translate }}</button>
+                  <button class="tab-btn" [class.active]="activeTab==='payments'"      (click)="setTab('payments')">{{ 'creditCards.tabPayments' | translate }}</button>
+                </div>
+
+                @if (activeTab==='transactions') {
+                  <div>
+                    <div class="tx-filters">
+                      <input class="tx-input" type="text" [placeholder]="'creditCards.searchPlaceholder' | translate" [(ngModel)]="txFilters.search" (input)="onTxSearch()" />
+                      <select class="tx-input" [(ngModel)]="txFilters.type" (change)="applyTxFilters()">
+                        <option value="">{{ 'creditCards.allTypes' | translate }}</option>
+                        <option value="income">{{ 'creditCards.filterIncome' | translate }}</option>
+                        <option value="expense">{{ 'creditCards.filterExpenses' | translate }}</option>
+                      </select>
+                      <input class="tx-input" type="date" [(ngModel)]="txFilters.startDate" (change)="applyTxFilters()" />
+                      <input class="tx-input" type="date" [(ngModel)]="txFilters.endDate"   (change)="applyTxFilters()" />
+                      <button class="tx-clear" (click)="txFilters={startDate:'',endDate:'',type:'',search:''}; applyTxFilters()">
+                        <svg lucideX [size]="13" [strokeWidth]="2"></svg> {{ 'creditCards.clear' | translate }}
+                      </button>
+                    </div>
+                    <div class="tx-summary-row">
+                      <span class="tx-sum income">
+                        <svg lucideArrowUp [size]="13" [strokeWidth]="2.5"></svg>
+                        {{ currencySymbol }}{{ fmt(txSummary.totalIncome) }}
+                      </span>
+                      <span class="tx-sum expense">
+                        <svg lucideArrowDown [size]="13" [strokeWidth]="2.5"></svg>
+                        {{ currencySymbol }}{{ fmt(txSummary.totalExpenses) }}
+                      </span>
+                      <span class="tx-sum balance" [class.neg]="txSummary.balance < 0">= {{ currencySymbol }}{{ fmt(txSummary.balance) }}</span>
+                      <span class="tx-count">{{ txTotal }} {{ 'creditCards.tabTransactions' | translate | lowercase }}</span>
+                    </div>
+                    @if (txLoading) {
+                      <div class="tab-loading"><div class="spinner-sm"></div></div>
+                    }
+                    @if (!txLoading && !txData.length) {
+                      <div class="tab-empty">{{ 'creditCards.noTxs' | translate }}</div>
+                    }
+                    @if (!txLoading && txData.length) {
+                      <table class="data-table">
+                        <thead><tr>
+                          <th>{{ 'creditCards.colDate' | translate }}</th>
+                          <th>{{ 'creditCards.colDescription' | translate }}</th>
+                          <th>{{ 'creditCards.colCategory' | translate }}</th>
+                          <th>{{ 'creditCards.colAmount' | translate }}</th>
+                        </tr></thead>
+                        <tbody>
+                          @for (t of txData; track t.id) {
+                            <tr>
+                              <td class="nowrap">{{ fmtDate(t.date) }}</td>
+                              <td class="ellipsis" [title]="t.description">{{ t.description }}</td>
+                              <td><span class="cat-chip" [style.background]="catColor(t)+'22'" [style.color]="catColor(t)">{{ catIcon(t) }} {{ catName(t) }}</span></td>
+                              <td class="amount-cell" [class.income]="t.type==='income'" [class.expense]="t.type==='expense'">
+                                {{ t.type==='income' ? '+' : '-' }}{{ currencySymbol }}{{ fmt(t.amount) }}
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                    @if (txPages > 1) {
+                      <div class="tx-pagination">
+                        <button class="page-btn prev-next" [disabled]="txPage<=1" (click)="prevTxPage()">‹</button>
+                        @for (p of txPageNumbers; track p) {
+                          @if (p!=='...') {
+                            <button class="page-btn" [class.active]="p===txPage" (click)="goTxPage(p)">{{ p }}</button>
+                          } @else {
+                            <span class="page-ellipsis">…</span>
+                          }
+                        }
+                        <button class="page-btn prev-next" [disabled]="txPage>=txPages" (click)="nextTxPage()">›</button>
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (activeTab==='history') {
+                  <div class="tab-content">
+                    @if (historyLoading) {
+                      <div class="tab-loading"><div class="spinner-sm"></div></div>
+                    }
+                    @if (!historyLoading && !history.length) {
+                      <div class="tab-empty">{{ 'creditCards.noHistory' | translate }}</div>
+                    }
+                    @if (!historyLoading && history.length) {
+                      <div class="history-section">
+                        <div class="chart-wrap">
+                          <div class="bar-chart">
+                            @for (h of history.slice().reverse(); track $index) {
+                              <div class="bar-col">
+                                @if (h.paid > 0) {
+                                  <div class="bar-paid-label">
+                                    <svg lucideCheck [size]="10" [strokeWidth]="2.5"></svg>
+                                  </div>
+                                }
+                                <div class="bar-group">
+                                  <div class="bar expense-bar" [style.height.%]="barHeight(h.expenses)" [title]="currencySymbol+fmt(h.expenses)"></div>
+                                </div>
+                                <div class="bar-label">{{ fmtYearMonth(h.yearMonth).split(' ')[0] }}</div>
+                                <div class="bar-amount">{{ currencySymbol }}{{ fmt(h.expenses) }}</div>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                        <table class="data-table">
+                          <thead><tr>
+                            <th>{{ 'creditCards.colMonth' | translate }}</th>
+                            <th>{{ 'creditCards.colExpenses' | translate }}</th>
+                            <th>{{ 'creditCards.colIncome' | translate }}</th>
+                            <th>{{ 'creditCards.colTransactions' | translate }}</th>
+                            <th>{{ 'creditCards.colPaid' | translate }}</th>
+                          </tr></thead>
+                          <tbody>
+                            @for (h of history; track $index) {
+                              <tr>
+                                <td class="nowrap">{{ fmtYearMonth(h.yearMonth) }}</td>
+                                <td class="amount-cell expense">-{{ currencySymbol }}{{ fmt(h.expenses) }}</td>
+                                <td class="amount-cell income">+{{ currencySymbol }}{{ fmt(h.income) }}</td>
+                                <td>{{ h.count }}</td>
+                                <td>
+                                  @if (h.paid > 0) {
+                                    <span class="paid-badge">
+                                      <svg lucideCheck [size]="11" [strokeWidth]="2.5"></svg>
+                                      {{ currencySymbol }}{{ fmt(h.paid) }}
+                                    </span>
+                                  } @else {
+                                    <span class="unpaid-badge">—</span>
+                                  }
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (activeTab==='subscriptions') {
+                  <div class="tab-content">
+                    <div class="tab-toolbar">
+                      <p class="tab-hint">{{ 'creditCards.subsHint' | translate }}</p>
+                      <button class="btn-sm" (click)="refreshSubscriptions()">
+                        <svg lucideRefreshCw [size]="13" [strokeWidth]="2"></svg> {{ 'creditCards.refresh' | translate }}
+                      </button>
+                    </div>
+                    @if (subsLoading) {
+                      <div class="tab-loading"><div class="spinner-sm"></div></div>
+                    }
+                    @if (!subsLoading && !subscriptions.length) {
+                      <div class="tab-empty">{{ 'creditCards.noSubs' | translate }}</div>
+                    }
+                    @if (!subsLoading && subscriptions.length) {
+                      <table class="data-table">
+                        <thead><tr>
+                          <th>{{ 'creditCards.colDescription' | translate }}</th>
+                          <th>{{ 'creditCards.colAvgMonth' | translate }}</th>
+                          <th>{{ 'creditCards.colOccurrences' | translate }}</th>
+                          <th>{{ 'creditCards.colMonthsActive' | translate }}</th>
+                          <th>{{ 'creditCards.colLastSeen' | translate }}</th>
+                        </tr></thead>
+                        <tbody>
+                          @for (s of subscriptions; track $index) {
+                            <tr>
+                              <td class="ellipsis sub-desc" [title]="s.description">
+                                <svg lucideRepeat2 [size]="13" [strokeWidth]="2"></svg>
+                                {{ s.description }}
+                              </td>
+                              <td class="amount-cell expense">{{ currencySymbol }}{{ fmt(s.avgAmount) }}</td>
+                              <td>{{ s.occurrences }}×</td>
+                              <td><span class="months-badge">{{ s.monthsActive }} {{ 'creditCards.colMonthsActive' | translate | lowercase }}</span></td>
+                              <td class="nowrap">{{ fmtDate(s.lastDate) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+                }
+
+                @if (activeTab==='payments') {
+                  <div class="tab-content">
+                    <div class="tab-toolbar">
+                      <p class="tab-hint">{{ 'creditCards.paymentsHint' | translate }}</p>
+                      <button class="btn-sm" (click)="openPaymentModal()">
+                        <svg lucideWallet [size]="13" [strokeWidth]="2"></svg> {{ 'creditCards.recordPayment' | translate }}
+                      </button>
+                    </div>
+                    @if (paymentsLoading) {
+                      <div class="tab-loading"><div class="spinner-sm"></div></div>
+                    }
+                    @if (!paymentsLoading && !payments.length) {
+                      <div class="tab-empty">{{ 'creditCards.noPayments' | translate }}</div>
+                    }
+                    @if (!paymentsLoading && payments.length) {
+                      <table class="data-table">
+                        <thead><tr>
+                          <th>{{ 'creditCards.colDate' | translate }}</th>
+                          <th>{{ 'creditCards.colMonth' | translate }}</th>
+                          <th>{{ 'creditCards.colAmount' | translate }}</th>
+                          <th>{{ 'creditCards.paymentType' | translate }}</th>
+                          <th>{{ 'creditCards.colNotes' | translate }}</th>
+                          <th></th>
+                        </tr></thead>
+                        <tbody>
+                          @for (p of payments; track p.id) {
+                            <tr>
+                              <td class="nowrap">{{ fmtDate(p.paymentDate) }}</td>
+                              <td class="nowrap">{{ MONTHS[p.billingMonth-1] }} {{ p.billingYear }}</td>
+                              <td class="amount-cell income">{{ currencySymbol }}{{ fmt(p.amount) }}</td>
+                              <td><span class="payment-badge" [class]="p.paymentType">{{ paymentTypeLabel(p.paymentType) }}</span></td>
+                              <td class="ellipsis muted">{{ p.notes || '—' }}</td>
+                              <td>
+                                <button class="del-btn" (click)="confirmDeletePayment(p)" title="{{ 'creditCards.delete' | translate }}">
+                                  <svg lucideTrash2 [size]="14" [strokeWidth]="2"></svg>
+                                </button>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+                }
+
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+</app-navbar>
+
+@if (showCardModal) {
+  <div class="modal-overlay" (click)="closeCardModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ editingCard ? ('creditCards.editCard' | translate) : ('creditCards.addCard' | translate) }}</h2>
+        <button class="close-btn" (click)="closeCardModal()">
+          <svg lucideX [size]="16" [strokeWidth]="2"></svg>
+        </button>
+      </div>
+      <form [formGroup]="cardForm" (ngSubmit)="submitCard()">
+        <div class="modal-body">
+
+          <div class="card-preview"
+               [style.background]="'linear-gradient(135deg,'+(cardForm.get('color')?.value||'#667eea')+' 0%,'+(cardForm.get('color')?.value||'#667eea')+'99 100%)'">
+            <div class="cp-number">{{ maskDigits(cardForm.get('lastFourDigits')?.value) }}</div>
+            <div class="cp-name">{{ cardForm.get('name')?.value || ('creditCards.cardName' | translate) }}</div>
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'creditCards.cardName' | translate }} *</label>
+            <input type="text" formControlName="name" [placeholder]="'creditCards.cardNamePlaceholder' | translate"
+                   [class.error]="cardForm.get('name')?.invalid && cardForm.get('name')?.touched" />
+            @if (cardForm.get('name')?.errors?.['required'] && cardForm.get('name')?.touched) {
+              <span class="error-message">{{ 'creditCards.nameRequired' | translate }}</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'creditCards.lastFourDigits' | translate }}</label>
+              <input type="text" formControlName="lastFourDigits" placeholder="ex: 4242" maxlength="4" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'creditCards.creditLimit' | translate }}</label>
+              <input type="number" formControlName="creditLimit" placeholder="ex: 5000" min="0" step="0.01" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'creditCards.statementDay' | translate }}</label>
+              <input type="number" formControlName="statementDay" placeholder="ex: 15" min="1" max="31" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'creditCards.dueDay' | translate }}</label>
+              <input type="number" formControlName="dueDay" placeholder="ex: 5" min="1" max="31" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'creditCards.utilizationAlert' | translate }}</label>
+            <input type="number" formControlName="utilizationAlertPct" min="1" max="100" />
+            <span class="field-hint">{{ 'creditCards.utilizationAlertHint' | translate }}</span>
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'creditCards.cardColor' | translate }}</label>
+            <div class="color-palette">
+              @for (c of PALETTE; track c) {
+                <button type="button" class="color-swatch"
+                        [style.background]="c" [class.selected]="cardForm.get('color')?.value===c"
+                        (click)="cardForm.patchValue({color:c})"></button>
+              }
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeCardModal()">{{ 'creditCards.cancel' | translate }}</button>
+          <button type="submit" class="btn-primary" [disabled]="cardForm.invalid||isSubmitting">
+            {{ isSubmitting ? ('creditCards.saving' | translate) : (editingCard ? ('creditCards.saveChanges' | translate) : ('creditCards.addCard' | translate)) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showPaymentModal) {
+  <div class="modal-overlay" (click)="closePaymentModal()">
+    <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ 'creditCards.recordPayment' | translate }}</h2>
+        <button class="close-btn" (click)="closePaymentModal()">
+          <svg lucideX [size]="16" [strokeWidth]="2"></svg>
+        </button>
+      </div>
+      <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
+        <div class="modal-body">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'creditCards.amount' | translate }} *</label>
+              <input type="number" formControlName="amount" placeholder="0.00" min="0.01" step="0.01"
+                     [class.error]="paymentForm.get('amount')?.invalid && paymentForm.get('amount')?.touched" />
+            </div>
+            <div class="form-group">
+              <label>{{ 'creditCards.paymentDate' | translate }} *</label>
+              <input type="date" formControlName="paymentDate" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'creditCards.billingMonth' | translate }} *</label>
+              <select formControlName="billingMonth">
+                @for (m of monthOptions(); track m.value) {
+                  <option [value]="m.value">{{ m.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>{{ 'creditCards.billingYear' | translate }} *</label>
+              <select formControlName="billingYear">
+                @for (y of yearOptions(); track y) {
+                  <option [value]="y">{{ y }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'creditCards.paymentType' | translate }}</label>
+            <div class="type-toggle">
+              <button type="button" class="type-option" [class.active]="paymentForm.get('paymentType')?.value==='full'"
+                      (click)="paymentForm.patchValue({paymentType:'full'})">{{ 'creditCards.payTypeFull' | translate }}</button>
+              <button type="button" class="type-option" [class.active]="paymentForm.get('paymentType')?.value==='minimum'"
+                      (click)="paymentForm.patchValue({paymentType:'minimum'})">{{ 'creditCards.payTypeMinimum' | translate }}</button>
+              <button type="button" class="type-option" [class.active]="paymentForm.get('paymentType')?.value==='partial'"
+                      (click)="paymentForm.patchValue({paymentType:'partial'})">{{ 'creditCards.payTypePartial' | translate }}</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>{{ 'creditCards.notes' | translate }}</label>
+            <input type="text" formControlName="notes" [placeholder]="'creditCards.notesPlaceholder' | translate" />
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closePaymentModal()">{{ 'creditCards.cancel' | translate }}</button>
+          <button type="submit" class="btn-primary" [disabled]="paymentForm.invalid||isPaymentSubmitting">
+            {{ isPaymentSubmitting ? ('creditCards.saving' | translate) : ('creditCards.recordPayment' | translate) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showImportModal) {
+  <div class="modal-overlay" (click)="closeImportModal()">
+    <div class="modal-content import-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ 'creditCards.importStatement' | translate }}</h2>
+        <button class="close-btn" (click)="closeImportModal()">
+          <svg lucideX [size]="16" [strokeWidth]="2"></svg>
+        </button>
+      </div>
+      <div class="modal-body import-modal-body">
+        @if (importSuccess) {
+          <div class="import-success-banner">
+            <svg lucideCheck [size]="16" [strokeWidth]="2.5"></svg>
+            {{ importSuccess }}
+          </div>
+        }
+        @if (importError) {
+          <div class="error-banner import-inner-error">
+            <svg lucideCircleAlert [size]="16" [strokeWidth]="2"></svg>
+            {{ importError }}
+          </div>
+        }
+        <div class="import-info">
+          <span class="import-count">{{ txFoundLabel() }}</span>
+          <span class="import-hint">{{ 'creditCards.assignCategories' | translate }}</span>
+        </div>
+        <div class="import-filter-bar">
+          <button class="import-filter-btn" [class.active]="importFilter==='all'"     (click)="importFilter='all'">{{ 'creditCards.filterAll' | translate }} ({{ importRows.length }})</button>
+          <button class="import-filter-btn income"  [class.active]="importFilter==='income'"  (click)="importFilter='income'">{{ 'creditCards.filterIncome' | translate }} ({{ importIncomeCount }})</button>
+          <button class="import-filter-btn expense" [class.active]="importFilter==='expense'" (click)="importFilter='expense'">{{ 'creditCards.filterExpenses' | translate }} ({{ importExpenseCount }})</button>
+        </div>
+        <div class="import-table-wrapper">
+          <table class="data-table import-table">
+            <thead><tr>
+              <th>{{ 'creditCards.colDate' | translate }}</th>
+              <th>{{ 'creditCards.colDescription' | translate }}</th>
+              <th>{{ 'creditCards.filterAll' | translate }}</th>
+              <th>{{ 'creditCards.colAmount' | translate }}</th>
+              <th>{{ 'creditCards.colCategory' | translate }}</th>
+              <th></th>
+            </tr></thead>
+            <tbody>
+              @for (row of filteredImportRows; track $index) {
+                <tr [class.row-missing-cat]="!row.categoryId">
+                  <td class="nowrap">{{ row.date }}</td>
+                  <td class="ellipsis import-desc" [title]="row.description">{{ row.description }}</td>
+                  <td><span class="import-type-badge" [class]="row.type">{{ row.type }}</span></td>
+                  <td class="amount-cell" [class]="row.type">{{ row.type==='income'?'+':'-' }}{{ currencySymbol }}{{ fmt(row.amount) }}</td>
+                  <td>
+                    <select class="import-cat-select" [(ngModel)]="row.categoryId">
+                      <option value="">{{ 'creditCards.selectCategory' | translate }}</option>
+                      @for (c of importCats(row.type); track c.id) {
+                        <option [value]="c.id">{{ c.icon }} {{ c.name }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <button class="del-btn" (click)="removeImportRow(row)">
+                      <svg lucideX [size]="14" [strokeWidth]="2"></svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeImportModal()">{{ 'creditCards.cancel' | translate }}</button>
+        <button class="btn-primary" [disabled]="importLoading||!importRows.length" (click)="confirmImport()">
+          {{ importLoading ? ('creditCards.importing' | translate) : importBtnLabel() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

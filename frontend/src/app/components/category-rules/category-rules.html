@@ -1,0 +1,121 @@
+<app-navbar>
+
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">{{ 'rules.title' | translate }}</h1>
+        <p class="page-subtitle">{{ 'rules.subtitle' | translate }}</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-outline" [disabled]="isApplying || rules.length === 0" (click)="applyToExisting()">
+          <svg lucidePlay [size]="14" [strokeWidth]="2"></svg>
+          {{ isApplying ? ('rules.applying' | translate) : ('rules.applyExisting' | translate) }}
+        </button>
+        <button class="btn-primary" (click)="openModal()">
+          <svg lucidePlus [size]="16" [strokeWidth]="2"></svg>
+          {{ 'rules.add' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage | translate }}</div>
+    }
+
+    @if (applyUpdated !== null) {
+      <div class="alert" [class.alert-success]="applyUpdated > 0" [class.alert-info]="applyUpdated === 0">
+        {{ applyUpdated > 0 ? ('rules.applyResult' | translate:{ n: applyUpdated }) : ('rules.applyNone' | translate) }}
+      </div>
+    }
+    @if (applyError) {
+      <div class="alert alert-error">{{ 'rules.errorApply' | translate }}</div>
+    }
+
+    @if (isLoading) {
+      <div class="loading-state">{{ 'rules.loading' | translate }}</div>
+    } @else if (rules.length === 0) {
+      <div class="empty-state">
+        <svg lucideShuffle [size]="40" [strokeWidth]="1.5" class="empty-icon"></svg>
+        <p class="empty-title">{{ 'rules.empty' | translate }}</p>
+        <p class="empty-desc">{{ 'rules.emptyDesc' | translate }}</p>
+        <button class="btn-primary" (click)="openModal()">{{ 'rules.add' | translate }}</button>
+      </div>
+    } @else {
+      <div class="rules-table-wrap">
+        <table class="rules-table">
+          <thead>
+            <tr>
+              <th>{{ 'rules.colKeyword' | translate }}</th>
+              <th>{{ 'rules.colCategory' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rule of rules; track rule.id) {
+              <tr>
+                <td>
+                  <code class="keyword-chip">{{ rule.keyword }}</code>
+                </td>
+                <td>
+                  <span class="category-badge" [style.background]="rule.category.color + '22'" [style.color]="rule.category.color">
+                    {{ rule.category.name }}
+                  </span>
+                </td>
+                <td class="action-col">
+                  <button class="btn-icon-danger" (click)="remove(rule)" [title]="'rules.delete' | translate">
+                    <svg lucideTrash2 [size]="14" [strokeWidth]="2"></svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+
+</app-navbar>
+
+@if (showModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ 'rules.modalTitle' | translate }}</h2>
+        <button class="close-btn" (click)="closeModal()">
+          <svg lucideX [size]="16" [strokeWidth]="2"></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>{{ 'rules.keyword' | translate }}</label>
+          <input type="text" [(ngModel)]="form.keyword"
+            [placeholder]="'rules.keywordHint' | translate" />
+          <span class="field-hint">{{ 'rules.keywordHelp' | translate }}</span>
+        </div>
+        <div class="form-group">
+          <label>{{ 'rules.category' | translate }}</label>
+          <select [(ngModel)]="form.categoryId">
+            <option value="">{{ 'rules.categoryPlaceholder' | translate }}</option>
+            @for (cat of categories; track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">{{ 'rules.cancel' | translate }}</button>
+        <button class="btn-primary"
+          [disabled]="!form.keyword.trim() || !form.categoryId || isSubmitting"
+          (click)="save()">
+          {{ isSubmitting ? ('rules.saving' | translate) : ('rules.save' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

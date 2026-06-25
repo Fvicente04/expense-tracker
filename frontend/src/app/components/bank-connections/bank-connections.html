@@ -1,0 +1,121 @@
+<app-navbar>
+
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">{{ 'bank.title' | translate }}</h1>
+      </div>
+      <button class="btn-primary" (click)="openModal()">
+        <svg lucidePlus [size]="16" [strokeWidth]="2"></svg>
+        {{ 'bank.add' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    <div class="renew-note">
+      <svg lucideLandmark [size]="15" [strokeWidth]="2"></svg>
+      {{ 'bank.renewNote' | translate }}
+    </div>
+
+    @if (isLoading) {
+      <div class="loading-state">{{ 'bank.loading' | translate }}</div>
+    } @else if (connections.length === 0) {
+      <div class="empty-state">
+        <svg lucideLandmark [size]="40" [strokeWidth]="1.5" class="empty-icon"></svg>
+        <p class="empty-title">{{ 'bank.noConnections' | translate }}</p>
+        <p class="empty-desc">{{ 'bank.noConnectionsDesc' | translate }}</p>
+        <button class="btn-primary" (click)="openModal()">{{ 'bank.add' | translate }}</button>
+      </div>
+    } @else {
+      <div class="connections-grid">
+        @for (conn of connections; track conn.id) {
+          <div class="connection-card">
+            <div class="card-header">
+              <div class="card-icon">
+                <svg lucideLandmark [size]="20" [strokeWidth]="2"></svg>
+              </div>
+              <div class="card-info">
+                <span class="card-name">{{ conn.displayName }}</span>
+                <span class="card-institution">{{ conn.institutionId }}</span>
+              </div>
+              <span class="status-badge" [class]="'status-' + conn.status">
+                {{ ('bank.status' + (conn.status | titlecase)) | translate }}
+              </span>
+            </div>
+
+            <div class="card-meta">
+              <span class="last-synced">
+                {{ 'bank.lastSynced' | translate }}:
+                @if (conn.lastSyncedAt) {
+                  {{ fmtDate(conn.lastSyncedAt) }}
+                } @else {
+                  {{ 'bank.neverSynced' | translate }}
+                }
+              </span>
+            </div>
+
+            @if (syncResults[conn.id]) {
+              <div class="sync-result">{{ syncResults[conn.id] }}</div>
+            }
+
+            <div class="card-actions">
+              <button class="btn-outline"
+                [disabled]="conn.status !== 'active' || syncingId === conn.id"
+                (click)="sync(conn)">
+                <svg lucideRefreshCw [size]="14" [strokeWidth]="2"
+                  [class.spinning]="syncingId === conn.id"></svg>
+                {{ syncingId === conn.id ? ('bank.syncing' | translate) : ('bank.sync' | translate) }}
+              </button>
+              <button class="btn-danger" (click)="remove(conn)">
+                <svg lucideTrash2 [size]="14" [strokeWidth]="2"></svg>
+                {{ 'bank.remove' | translate }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+</app-navbar>
+
+@if (showModal) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ 'bank.connectTitle' | translate }}</h2>
+        <button class="close-btn" (click)="closeModal()">
+          <svg lucideX [size]="16" [strokeWidth]="2"></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>{{ 'bank.displayName' | translate }}</label>
+          <input type="text" [(ngModel)]="form.displayName"
+            [placeholder]="'bank.displayNameHint' | translate" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">{{ 'bank.cancel' | translate }}</button>
+        <button class="btn-primary"
+          [disabled]="!form.displayName.trim() || isSubmitting"
+          (click)="connect()">
+          {{ isSubmitting ? ('bank.connecting' | translate) : ('bank.connect' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
