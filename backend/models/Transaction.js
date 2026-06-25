@@ -17,7 +17,7 @@ const Transaction = sequelize.define('Transaction', {
   },
   categoryId: {
     type: DataTypes.UUID,
-    allowNull: false,
+    allowNull: true,
     field: 'category_id',
     references: { model: 'categories', key: 'id' },
     onDelete: 'RESTRICT',
@@ -65,7 +65,7 @@ const Transaction = sequelize.define('Transaction', {
     field: 'is_recurring'
   },
   recurringFrequency: {
-    type: DataTypes.ENUM('weekly', 'monthly', 'yearly'),
+    type: DataTypes.ENUM('weekly', 'biweekly', 'monthly'),
     allowNull: true,
     field: 'recurring_frequency'
   },
@@ -78,6 +78,32 @@ const Transaction = sequelize.define('Transaction', {
     type: DataTypes.UUID,
     allowNull: true,
     field: 'recurring_group_id'
+  },
+  creditCardId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    field: 'credit_card_id',
+    references: { model: 'credit_cards', key: 'id' },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
+  },
+  externalId: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    field: 'external_id'
+  },
+  source: {
+    type: DataTypes.ENUM('manual', 'bank_sync'),
+    allowNull: false,
+    defaultValue: 'manual'
+  },
+  bankConnectionId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    field: 'bank_connection_id',
+    references: { model: 'bank_connections', key: 'id' },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
   }
 }, {
   tableName: 'transactions',
@@ -87,7 +113,10 @@ const Transaction = sequelize.define('Transaction', {
     { fields: ['user_id', 'date'],        name: 'transactions_user_date_idx'      },
     { fields: ['user_id', 'type'],        name: 'transactions_user_type_idx'      },
     { fields: ['user_id', 'category_id'], name: 'transactions_user_category_idx'  },
-    { fields: ['recurring_group_id'],     name: 'transactions_recurring_group_idx'}
+    { fields: ['recurring_group_id'],     name: 'transactions_recurring_group_idx'},
+    { fields: ['credit_card_id'],         name: 'transactions_credit_card_idx'    },
+    { fields: ['bank_connection_id'],     name: 'transactions_bank_connection_idx'},
+    { fields: ['user_id', 'external_id'], name: 'transactions_user_external_idx', unique: true }
   ]
 });
 

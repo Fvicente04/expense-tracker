@@ -22,6 +22,7 @@ exports.getSummary = async (req, res) => {
 
     res.json({ totalIncome, totalExpense, balance: totalIncome - totalExpense, transactionCount: txs.length });
   } catch (err) {
+    console.error('report error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -57,16 +58,17 @@ exports.getByCategory = async (req, res) => {
 
     res.json(report);
   } catch (err) {
+    console.error('report error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 exports.getMonthlyTrend = async (req, res) => {
   try {
-    const { months = 6 } = req.query;
+    const monthsBack = parseInt(req.query.months, 10);
     const end = new Date();
     const start = new Date();
-    start.setMonth(start.getMonth() - parseInt(months));
+    start.setMonth(start.getMonth() - (monthsBack > 0 ? Math.min(monthsBack, 60) : 6));
 
     const txs = await Transaction.findAll({
       where: { userId: req.user.id, date: { [Op.between]: [start, end] } },
@@ -90,6 +92,7 @@ exports.getMonthlyTrend = async (req, res) => {
 
     res.json(result);
   } catch (err) {
+    console.error('report error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

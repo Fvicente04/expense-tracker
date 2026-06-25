@@ -42,7 +42,7 @@ const Category = sequelize.define('Category', {
     }
   },
   icon: {
-    type: DataTypes.STRING(10),
+    type: DataTypes.STRING(50),
     defaultValue: '💰'
   },
   color: {

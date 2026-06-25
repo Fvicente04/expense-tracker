@@ -50,6 +50,11 @@ const Budget = sequelize.define('Budget', {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0,
     allowNull: false
+  },
+  recurring: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   tableName: 'budgets',
