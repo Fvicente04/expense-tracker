@@ -19,7 +19,8 @@ function normalizeUrl(url) {
 
 const allowedOrigins = new Set(
   [
-    normalizeUrl(process.env.CLIENT_URL),
+    // CLIENT_URL may list several exact origins, comma-separated
+    ...(process.env.CLIENT_URL || '').split(',').map(normalizeUrl),
     'http://localhost:4200',
     'http://localhost:5173',
     'http://localhost:3000',
