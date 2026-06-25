@@ -1,4 +1,11 @@
 :root {
+  --c-bg:       #f0f2f7;
+  --c-surface:  #ffffff;
+  --c-surface2: #f7f8fc;
+  --c-border:   #e8ecf1;
+  --c-text:     #1e2139;
+  --c-muted:    #8892a4;
+
   --dash-bg:         #f0f2f7;
   --dash-surface:    #ffffff;
   --dash-surface2:   #f7f8fc;
@@ -20,6 +27,13 @@
 }
 
 body.dark-mode {
+  --c-bg:       #0f1117;
+  --c-surface:  #181c26;
+  --c-surface2: #1e2235;
+  --c-border:   rgba(255,255,255,0.07);
+  --c-text:     #f0f2f8;
+  --c-muted:    #7a83a0;
+
   --dash-bg:         #0f1117;
   --dash-surface:    #181c26;
   --dash-surface2:   #1e2235;
@@ -46,6 +60,7 @@ app-transaction-list,
 app-budget-list,
 app-reports-view,
 app-category-list,
+app-goal-list,
 app-dashboard { display: block; background: #f0f2f7; min-height: 100vh; }
 
 .page-header { background: #ffffff; border-bottom: 1px solid #e8ecf1; padding: 24px 32px; margin-bottom: 0; }
@@ -134,6 +149,7 @@ body.dark-mode app-transaction-list,
 body.dark-mode app-budget-list,
 body.dark-mode app-reports-view,
 body.dark-mode app-category-list,
+body.dark-mode app-goal-list,
 body.dark-mode app-dashboard { background: #0f1117; display: block; min-height: 100vh; }
 
 body.dark-mode .page-wrapper,
@@ -181,9 +197,9 @@ body.dark-mode .action-btn.delete:hover { background: #ff5c6a; color: white; }
 
 body.dark-mode .loading-container p { color: #7a83a0; }
 body.dark-mode .spinner { border-color: rgba(255,255,255,0.07); border-top-color: #667eea; }
-body.dark-mode .empty-state     { background: #181c26; border-color: rgba(255,255,255,0.07); box-shadow: none; }
-body.dark-mode .empty-state h3  { color: #f0f2f8; }
-body.dark-mode .empty-state p   { color: #7a83a0; }
+body.dark-mode .empty-state     { background: #181c26 !important; border-color: rgba(255,255,255,0.07) !important; box-shadow: none !important; }
+body.dark-mode .empty-state h3  { color: #f0f2f8 !important; }
+body.dark-mode .empty-state p   { color: #7a83a0 !important; }
 body.dark-mode .error-banner    { background: rgba(255,92,106,0.1); border-color: rgba(255,92,106,0.2); color: #ff5c6a; }
 body.dark-mode .error-message   { color: #ff5c6a; }
 
@@ -480,3 +496,55 @@ input[type="date"]::-webkit-datetime-edit {
 input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.65;
 }
+
+/* ── Global dark mode overrides (layout + modals) ─────────────────── */
+
+body.dark-mode .sidebar {
+  background: #181c26 !important;
+  border-right-color: rgba(255,255,255,0.07) !important;
+  box-shadow: none !important;
+}
+
+body.dark-mode .logo-text { color: #f0f2f8 !important; }
+
+body.dark-mode .nav-item { color: rgba(255,255,255,0.5) !important; }
+body.dark-mode .nav-item:hover { background: rgba(255,255,255,0.05) !important; color: #f0f2f8 !important; }
+body.dark-mode .nav-item.active { background: rgba(102,126,234,0.15) !important; color: #a5b4fc !important; }
+body.dark-mode .nav-item.logout { color: #ff5c6a !important; }
+body.dark-mode .nav-item.logout:hover { background: rgba(255,92,106,0.1) !important; }
+
+body.dark-mode .nav-icon-wrap { background: transparent !important; }
+body.dark-mode .nav-item:hover .nav-icon-wrap { background: rgba(255,255,255,0.08) !important; }
+body.dark-mode .nav-item.active .nav-icon-wrap { background: linear-gradient(135deg,#667eea,#764ba2) !important; }
+
+body.dark-mode .nav-divider { background: rgba(255,255,255,0.07) !important; }
+
+body.dark-mode .sidebar-footer { border-top-color: rgba(255,255,255,0.07) !important; background: #181c26 !important; }
+body.dark-mode .user-name { color: #f0f2f8 !important; }
+body.dark-mode .user-role { color: rgba(255,255,255,0.35) !important; }
+body.dark-mode .user-avatar { border-color: rgba(102,126,234,0.35) !important; }
+body.dark-mode .footer-logout-btn { color: rgba(255,255,255,0.3) !important; }
+body.dark-mode .footer-logout-btn:hover { background: rgba(255,92,106,0.12) !important; color: #ff5c6a !important; }
+
+body.dark-mode .mobile-header {
+  background: #181c26 !important;
+  border-bottom-color: rgba(255,255,255,0.07) !important;
+  box-shadow: none !important;
+}
+body.dark-mode .hamburger-btn { color: #f0f2f8 !important; }
+body.dark-mode .mobile-logo   { color: #f0f2f8 !important; }
+
+body.dark-mode .modal-overlay { background: rgba(0,0,0,0.72) !important; }
+body.dark-mode .modal-content {
+  background: #181c26 !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5) !important;
+}
+body.dark-mode .modal-header {
+  background: #181c26 !important;
+  border-bottom-color: rgba(255,255,255,0.07) !important;
+}
+body.dark-mode .modal-title  { color: #f0f2f8 !important; }
+body.dark-mode .close-btn    { background: #1e2235 !important; color: #7a83a0 !important; }
+body.dark-mode .close-btn:hover { background: rgba(255,255,255,0.07) !important; color: #f0f2f8 !important; }
+body.dark-mode .modal-body   { background: #181c26 !important; }
+body.dark-mode .modal-footer { background: #1e2235 !important; border-top-color: rgba(255,255,255,0.07) !important; }

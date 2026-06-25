@@ -1,0 +1,207 @@
+<app-navbar>
+
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">{{ 'settings.title' | translate }}</h1>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="settings-layout">
+
+      <!-- Sidebar -->
+      <aside class="settings-sidebar">
+        <div class="sidebar-user">
+          <div class="user-avatar">
+            <span class="avatar-initials">{{ userInitials }}</span>
+          </div>
+          <span class="user-name">{{ userName }}</span>
+          <span class="user-email">{{ userEmail }}</span>
+        </div>
+
+        <nav class="settings-nav">
+          <button class="nav-item" [class.active]="activeSection === 'profile'" (click)="activeSection = 'profile'">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            {{ 'settings.profile' | translate }}
+          </button>
+          <button class="nav-item" [class.active]="activeSection === 'security'" (click)="activeSection = 'security'">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {{ 'settings.security' | translate }}
+          </button>
+          <button class="nav-item" [class.active]="activeSection === 'appearance'" (click)="activeSection = 'appearance'">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            {{ 'settings.language' | translate }}
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Content panel -->
+      <main class="settings-content">
+
+        <!-- Profile section -->
+        <div *ngIf="activeSection === 'profile'">
+          <div class="section-header">
+            <h2 class="section-title">{{ 'settings.profile' | translate }}</h2>
+            <p class="section-desc">{{ 'settings.profileDesc' | translate }}</p>
+          </div>
+
+          <div class="info-block" *ngIf="userEmail">
+            <span class="info-label">{{ 'settings.accountInfo' | translate }}</span>
+            <span class="info-value">{{ userEmail }}</span>
+          </div>
+
+          <div *ngIf="profileSuccess" class="alert alert-success">{{ profileSuccess }}</div>
+          <div *ngIf="profileError"   class="alert alert-error">{{ profileError }}</div>
+
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+            <div class="form-group">
+              <label for="name">{{ 'settings.displayName' | translate }}</label>
+              <input id="name" type="text" formControlName="name"
+                [class.error]="profileForm.get('name')?.touched && profileForm.get('name')?.invalid" />
+              <span class="error-message"
+                *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.errors?.['required']">
+                {{ 'val.nameRequired' | translate }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="currency">{{ 'settings.currency' | translate }}</label>
+              <select id="currency" formControlName="currency">
+                <option *ngFor="let c of currencies" [value]="c.code">{{ c.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-outline" [disabled]="profileForm.invalid || profileSaving">
+                {{ (profileSaving ? 'settings.saving' : 'settings.saveChanges') | translate }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Security section -->
+        <div *ngIf="activeSection === 'security'">
+          <div class="section-header">
+            <h2 class="section-title">{{ 'settings.security' | translate }}</h2>
+            <p class="section-desc">{{ 'settings.passwordDesc' | translate }}</p>
+          </div>
+
+          <div *ngIf="passwordSuccess" class="alert alert-success">{{ passwordSuccess }}</div>
+          <div *ngIf="passwordError"   class="alert alert-error">{{ passwordError }}</div>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <div class="form-group">
+              <label for="currentPassword">{{ 'settings.currentPassword' | translate }}</label>
+              <div class="input-with-toggle">
+                <input id="currentPassword" [type]="showCurrentPwd ? 'text' : 'password'" formControlName="currentPassword"
+                  [class.error]="passwordForm.get('currentPassword')?.touched && passwordForm.get('currentPassword')?.invalid" />
+                <button type="button" class="pwd-toggle" (click)="showCurrentPwd = !showCurrentPwd" tabindex="-1">
+                  <svg *ngIf="!showCurrentPwd" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <svg *ngIf="showCurrentPwd" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="error-message"
+                *ngIf="passwordForm.get('currentPassword')?.touched && passwordForm.get('currentPassword')?.errors?.['required']">
+                {{ 'val.currentPasswordRequired' | translate }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">{{ 'settings.newPassword' | translate }}</label>
+              <div class="input-with-toggle">
+                <input id="newPassword" [type]="showNewPwd ? 'text' : 'password'" formControlName="newPassword"
+                  [class.error]="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.invalid" />
+                <button type="button" class="pwd-toggle" (click)="showNewPwd = !showNewPwd" tabindex="-1">
+                  <svg *ngIf="!showNewPwd" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <svg *ngIf="showNewPwd" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="error-message"
+                *ngIf="passwordForm.get('newPassword')?.touched && passwordForm.get('newPassword')?.errors?.['minlength']">
+                {{ 'val.newPasswordMin' | translate }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">{{ 'settings.confirmPassword' | translate }}</label>
+              <div class="input-with-toggle">
+                <input id="confirmPassword" [type]="showConfirmPwd ? 'text' : 'password'" formControlName="confirmPassword"
+                  [class.error]="passwordForm.get('confirmPassword')?.touched && passwordForm.errors?.['mismatch']" />
+                <button type="button" class="pwd-toggle" (click)="showConfirmPwd = !showConfirmPwd" tabindex="-1">
+                  <svg *ngIf="!showConfirmPwd" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  <svg *ngIf="showConfirmPwd" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="error-message"
+                *ngIf="passwordForm.get('confirmPassword')?.touched && passwordForm.errors?.['mismatch']">
+                {{ 'val.passwordMismatch' | translate }}
+              </span>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-outline" [disabled]="passwordForm.invalid || passwordSaving">
+                {{ (passwordSaving ? 'settings.saving' : 'settings.changePasswordBtn') | translate }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Language / Appearance section -->
+        <div *ngIf="activeSection === 'appearance'">
+          <div class="section-header">
+            <h2 class="section-title">{{ 'settings.language' | translate }}</h2>
+            <p class="section-desc">{{ 'settings.languageDesc' | translate }}</p>
+          </div>
+
+          <div class="language-options">
+            <button class="lang-btn" [class.active]="lang.currentLang === 'en'" (click)="setLanguage('en')">
+              <span class="lang-flag">🇺🇸</span>
+              <span class="lang-name">{{ 'settings.english' | translate }}</span>
+              <svg *ngIf="lang.currentLang === 'en'" class="lang-check" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="lang-btn" [class.active]="lang.currentLang === 'pt-BR'" (click)="setLanguage('pt-BR')">
+              <span class="lang-flag">🇧🇷</span>
+              <span class="lang-name">{{ 'settings.portugueseBR' | translate }}</span>
+              <svg *ngIf="lang.currentLang === 'pt-BR'" class="lang-check" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <p class="dark-mode-note">{{ 'settings.darkModeNote' | translate }}</p>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+</app-navbar>
