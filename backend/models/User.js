@@ -37,6 +37,10 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('EUR', 'USD', 'GBP', 'BRL'),
     defaultValue: 'EUR',
     allowNull: false
+  },
+  passwordChangedAt: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   tableName: 'users',
@@ -52,6 +56,7 @@ const User = sequelize.define('User', {
       if (user.changed('password')) {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+        user.passwordChangedAt = new Date();
       }
     }
   }

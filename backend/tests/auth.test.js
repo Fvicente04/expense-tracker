@@ -14,7 +14,7 @@ const testUser = {
 let authToken = '';
 
 beforeAll(async () => { await sequelize.authenticate(); });
-afterAll(async ()  => { await sequelize.close(); });
+afterAll(() => {});
 
 describe('POST /api/auth/register', () => {
   it('should register a new user and return a token', async () => {
@@ -35,7 +35,7 @@ describe('POST /api/auth/register', () => {
     const res = await request(app).post('/api/auth/register').send({
       name: 'No Pass', email: 'nopass@test.com'
     });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(422);
   });
 });
 

@@ -73,6 +73,18 @@ export class AuthService {
   this.budgetService.invalidate();
 }
 
+  updateProfile(data: { name?: string; currency?: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/profile`, data).pipe(
+      tap((user: any) => this.userSubject.next(user))
+    );
+  }
+
+  changePassword(data: { currentPassword: string; newPassword: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/password`, data).pipe(
+      tap((res: any) => { if (res.token) this.setToken(res.token); })
+    );
+  }
+
   setToken(token: string): void { localStorage.setItem(this.tokenKey, token); }
   getToken(): string | null { return localStorage.getItem(this.tokenKey); }
   isAuthenticated(): boolean { return !!this.getToken(); }
